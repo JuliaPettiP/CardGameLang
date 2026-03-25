@@ -1,4 +1,4 @@
-<!--[![✗](https://img.shields.io/badge/Release-v2.0.0-ffb600.svg?style=for-the-badge)](https://github.com/JuliaPettiP/CardGameLang/releases)-->
+[![✗](https://img.shields.io/badge/Release-v2.0.0-ffb600.svg?style=for-the-badge)](https://github.com/JuliaPettiP/CardGameLang/releases)
 
 [![✗](https://github.com/JuliaPettiP/CardGameLang/actions/workflows/pipeline.yaml/badge.svg?branch=production)](https://github.com/JuliaPettiP/CardGameLang/actions/workflows/pipeline.yaml)
 
