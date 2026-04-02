@@ -9,6 +9,7 @@
 | Name                     | Student ID | Email                            |
 |--------------------------|------------|----------------------------------|
 | Julia Petti Pagadizabal  | 62453      | jpettipagadizabal@itba.edu.ar    |
+| João Ferreira            | 69220      | jcouceirofulgenciot@itba.edu.ar  |
 
 
 A base compiler example, developed with Flex and Bison.
