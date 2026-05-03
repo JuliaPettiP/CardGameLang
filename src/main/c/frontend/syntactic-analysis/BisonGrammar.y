@@ -4,6 +4,113 @@
 #include "AbstractSyntaxTree.h"
 #include "BisonActions.h"
 
+void yyerror(const YYLTYPE * location, const char * message) {}
+
+%}
+
+%define api.pure full
+%define api.push-pull push
+%define api.value.union.name SemanticValue
+%define parse.error detailed
+%locations
+
+%union {
+
+	/** Terminals. */
+	signed int integer;
+	char * string;
+	TokenLabel token;
+
+	/** Non-terminals. */
+	Program * program;
+	Game * game;
+}
+/** Todavia no usamos destructor
+* %destructor { destroyGame($$); } <game>
+*/
+
+/** Terminals. */
+%token <integer> INTEGER
+%token <string> IDENTIFIER
+
+%token <token> GAME
+%token <token> PLAYERS
+%token <token> DECK
+%token <token> CARD
+%token <token> HAND
+%token <token> PLAY_RULE
+%token <token> RULES
+%token <token> TURN
+%token <token> ACTIONS
+%token <token> WIN
+
+%token <token> IF
+%token <token> ALLOW
+%token <token> PLAYED
+%token <token> CANNOT_PLAY
+%token <token> ELSE
+%token <token> MAY
+%token <token> MUST
+
+%token <token> EMPTY_HAND
+%token <token> REACH_POINTS
+%token <token> SAME_COLOR
+%token <token> SAME_VALUE
+%token <token> WILD
+%token <token> ANY_CARD
+
+%token <token> RANGE
+%token <token> OPEN_BRACE
+%token <token> CLOSE_BRACE
+%token <token> OPEN_COMMENT
+%token <token> CLOSE_COMMENT
+%token <token> COMMA
+
+%token <token> IGNORED
+%token <token> UNKNOWN
+
+/** Non-terminals. */
+%type <program> program
+%type <game> card_game
+
+%%
+
+program:
+	card_game
+		{ $$ = GameProgramSemanticAction($1); }
+;
+
+card_game:
+	GAME IDENTIFIER OPEN_BRACE game_body CLOSE_BRACE
+		{ $$ = GameSemanticAction($2); }
+;
+
+game_body:
+	players_section hand_section win_section
+;
+
+players_section:
+	PLAYERS INTEGER
+;
+
+hand_section:
+	HAND INTEGER
+;
+
+win_section:
+	WIN IF EMPTY_HAND
+;
+
+%%
+
+
+/* CODIGO ANTERIOR
+%{
+
+#include "../../support/type/TokenLabel.h"
+#include "AbstractSyntaxTree.h"
+#include "BisonActions.h"
+
 /**
  * The error reporting function for Bison parser.
  *
@@ -12,6 +119,7 @@
  * @see https://www.gnu.org/software/bison/manual/html_node/Error-Reporting-Function.html
  * @see https://www.gnu.org/software/bison/manual/html_node/Tracking-Locations.html
  */
+ /*
 void yyerror(const YYLTYPE * location, const char * message) {}
 
 %}
@@ -45,11 +153,13 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
+ /*
 %destructor { destroyConstant($$); } <constant>
 %destructor { destroyExpression($$); } <expression>
 %destructor { destroyFactor($$); } <factor>
 
 /** Terminals. */
+/*
 %token <integer> INTEGER
 %token <token> ADD
 %token <token> CLOSE_BRACE
@@ -66,6 +176,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> UNKNOWN
 
 /** Non-terminals. */
+/*
 %type <constant> constant
 %type <expression> expression
 %type <factor> factor
@@ -77,6 +188,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  * @see https://en.cppreference.com/w/cpp/language/operator_precedence.html
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  */
+ /*
 %left ADD SUB
 %left MUL DIV
 
@@ -102,3 +214,5 @@ constant: INTEGER											{ $$ = IntegerConstantSemanticAction($1); }
 	;
 
 %%
+
+*/

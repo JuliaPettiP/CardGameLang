@@ -8,12 +8,35 @@
 /** Initialize module's internal state. */
 ModuleDestructor initializeAbstractSyntaxTreeModule();
 
+typedef struct Program Program;
+typedef struct Game Game;
+
+struct Game {
+	char * name;
+};
+
+struct Program {
+	Game * game;
+};
+
+void destroyGame(Game * game);
+void destroyProgram(Program * program);
+
+#endif
+
+
+
+
+/* CODIGO ANTERIRIOR
+
+
 /**
  * This type definitions allows self-referencing types (e.g., an expression
  * that is made of another expressions, such as talking about you in 3rd
  * person, but without the madness).
  */
 
+ /*
 typedef enum ExpressionType ExpressionType;
 typedef enum FactorType FactorType;
 
@@ -26,6 +49,7 @@ typedef struct Program Program;
  * Node types for the Abstract Syntax Tree (AST).
  */
 
+ /*
 enum ExpressionType {
 	ADDITION,
 	DIVISION,
@@ -70,9 +94,12 @@ struct Program {
  * Node recursive super-duper-trambolik-destructors.
  */
 
+ /*
 void destroyConstant(Constant * constant);
 void destroyExpression(Expression * expression);
 void destroyFactor(Factor * factor);
 void destroyProgram(Program * program);
 
 #endif
+
+*/

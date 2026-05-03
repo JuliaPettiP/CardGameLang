@@ -20,6 +20,27 @@ ModuleDestructor initializeAbstractSyntaxTreeModule() {
 
 /* PUBLIC FUNCTIONS */
 
+void destroyGame(Game * game) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (game != NULL) {
+		free(game->name);
+		free(game);
+	}
+}
+
+void destroyProgram(Program * program) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (program != NULL) {
+		destroyGame(program->game);
+		free(program);
+	}
+}
+
+
+
+
+
+/* CODIGO ANTERIRIOR
 void destroyConstant(Constant * constant) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (constant != NULL) {
@@ -68,3 +89,5 @@ void destroyProgram(Program * program) {
 		free(program);
 	}
 }
+
+*/

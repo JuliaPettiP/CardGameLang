@@ -16,11 +16,16 @@ ModuleDestructor initializeBisonActionsModule();
  * Bison semantic actions.
  */
 
+Program * GameProgramSemanticAction(Game * game);
+Game * GameSemanticAction(char * name);
+
+/* CODIGO ANTERIRIOR
 Constant * IntegerConstantSemanticAction(const int value);
 Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
 Expression * FactorExpressionSemanticAction(Factor * factor);
 Factor * ConstantFactorSemanticAction(Constant * constant);
 Factor * ExpressionFactorSemanticAction(Expression * expression);
 Program * ExpressionProgramSemanticAction(Expression * expression);
+*/
 
 #endif

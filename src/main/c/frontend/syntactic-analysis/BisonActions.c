@@ -36,6 +36,28 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 
 /* PUBLIC FUNCTIONS */
 
+
+Game * GameSemanticAction(char * name) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+
+	Game * game = calloc(1, sizeof(Game));
+	game->name = strdup(name);
+
+	return game;
+}
+
+Program * GameProgramSemanticAction(Game * game) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+
+	Program * program = calloc(1, sizeof(Program));
+	program->game = game;
+
+	_compilerState->abstractSyntaxtTree = program;
+
+	return program;
+}
+
+/* CODIGO ANTERIRIOR
 Constant * IntegerConstantSemanticAction(const int value) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Constant * constant = calloc(1, sizeof(Constant));
@@ -83,3 +105,5 @@ Program * ExpressionProgramSemanticAction(Expression * expression) {
 	_compilerState->abstractSyntaxtTree = program;
 	return program;
 }
+
+*/
