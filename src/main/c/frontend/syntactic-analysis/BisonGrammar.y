@@ -16,20 +16,27 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 %union {
 
-	/** Terminals. */
+	/** Terminals (Dados que vêm do Lexer)[cite: 3] */
 	signed int integer;
 	char * string;
 	TokenLabel token;
 
-	/** Non-terminals. */
+	/** Non-terminals (Nós da Árvore Sintática) */
 	Program * program;
 	Game * game;
+	PlayerRange * player_range;
 }
-/** Todavia no usamos destructor
-* %destructor { destroyGame($$); } <game>
-*/
 
-/** Terminals. */
+/** 
+ * Destrutores. Estas funções são executadas se o Bison falhar a meio (ex: erro de sintaxe),
+ * garantindo que a memória alocada até ao momento é libertada. Isto evita os erros de
+ * status 1 causados pelas memory leaks e satisfaz o AddressSanitizer. 
+ */
+%destructor { destroyGame($$); } <game>
+%destructor { destroyPlayerRange($$); } <player_range>
+%destructor { free($$); } <string>
+
+/** Terminals (Keywords do jogo definidas no Flex)[cite: 3] */
 %token <integer> INTEGER
 %token <string> IDENTIFIER
 
@@ -69,150 +76,40 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> IGNORED
 %token <token> UNKNOWN
 
-/** Non-terminals. */
+/** Non-terminals (Tipos devolvidos pelas regras abaixo) */
 %type <program> program
 %type <game> card_game
+%type <player_range> players_section
+%type <integer> hand_section
 
 %%
 
-program:
-	card_game
-		{ $$ = GameProgramSemanticAction($1); }
-;
-
-card_game:
-	GAME IDENTIFIER OPEN_BRACE game_body CLOSE_BRACE
-		{ $$ = GameSemanticAction($2); }
-;
-
-game_body:
-	players_section hand_section win_section
-;
-
-players_section:
-	PLAYERS INTEGER
-;
-
-hand_section:
-	HAND INTEGER
-;
-
-win_section:
-	WIN IF EMPTY_HAND
-;
-
-%%
-
-
-/* CODIGO ANTERIOR
-%{
-
-#include "../../support/type/TokenLabel.h"
-#include "AbstractSyntaxTree.h"
-#include "BisonActions.h"
-
-/**
- * The error reporting function for Bison parser.
- *
- * @todo Add location to the grammar and "pushToken" API function.
- *
- * @see https://www.gnu.org/software/bison/manual/html_node/Error-Reporting-Function.html
- * @see https://www.gnu.org/software/bison/manual/html_node/Tracking-Locations.html
- */
- /*
-void yyerror(const YYLTYPE * location, const char * message) {}
-
-%}
-
-// You touch this, and you die.
-%define api.pure full
-%define api.push-pull push
-%define api.value.union.name SemanticValue
-%define parse.error detailed
-%locations
-
-%union {
-	/** Terminals. */
-
-	signed int integer;
-	TokenLabel token;
-
-	/** Non-terminals. */
-
-	Constant * constant;
-	Expression * expression;
-	Factor * factor;
-	Program * program;
+// Regra raiz do compilador
+program: card_game { 
+    $$ = GameProgramSemanticAction($1); 
 }
 
-/**
- * Destructors. This functions are executed after the parsing ends, so if the
- * AST must be used in the following phases of the compiler you shouldn't used
- * this approach for the AST root node ("program" non-terminal, in this
- * grammar), or it will drop the entire tree even if the parsing succeeds.
- *
- * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
- */
- /*
-%destructor { destroyConstant($$); } <constant>
-%destructor { destroyExpression($$); } <expression>
-%destructor { destroyFactor($$); } <factor>
+// A estrutura principal do jogo
+card_game: GAME IDENTIFIER OPEN_BRACE players_section hand_section win_section CLOSE_BRACE { 
+    $$ = GameSemanticAction($2, $4, $5); 
+}
 
-/** Terminals. */
-/*
-%token <integer> INTEGER
-%token <token> ADD
-%token <token> CLOSE_BRACE
-%token <token> CLOSE_COMMENT
-%token <token> CLOSE_PARENTHESIS
-%token <token> DIV
-%token <token> MUL
-%token <token> OPEN_BRACE
-%token <token> OPEN_COMMENT
-%token <token> OPEN_PARENTHESIS
-%token <token> SUB
+// Secção de jogadores: suporta tanto "players 2" como "players 2 .. 4"
+players_section: PLAYERS INTEGER RANGE INTEGER {
+    $$ = PlayerRangeSemanticAction($2, $4);
+}
+| PLAYERS INTEGER {
+    $$ = PlayerRangeSemanticAction($2, $2);
+}
 
-%token <token> IGNORED
-%token <token> UNKNOWN
+// Secção da mão devolve diretamente um inteiro (não precisa de AST extra para já)
+hand_section: HAND INTEGER {
+    $$ = $2;
+}
 
-/** Non-terminals. */
-/*
-%type <constant> constant
-%type <expression> expression
-%type <factor> factor
-%type <program> program
-
-/**
- * Precedence and associativity.
- *
- * @see https://en.cppreference.com/w/cpp/language/operator_precedence.html
- * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
- */
- /*
-%left ADD SUB
-%left MUL DIV
+// A secção de vitória provisória. Por agora, não tem ação semântica associada[cite: 3].
+win_section: WIN IF EMPTY_HAND {
+    // Fica vazio até expandirmos o AST com as regras de vitória.
+}
 
 %%
-
-// IMPORTANT: To use λ in the following grammar, use the %empty symbol.
-
-program: expression											{ $$ = ExpressionProgramSemanticAction($1); }
-	;
-
-expression: expression[left] ADD expression[right]			{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| expression[left] DIV expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| expression[left] MUL expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| expression[left] SUB expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| factor												{ $$ = FactorExpressionSemanticAction($1); }
-	;
-
-factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS		{ $$ = ExpressionFactorSemanticAction($2); }
-	| constant												{ $$ = ConstantFactorSemanticAction($1); }
-	;
-
-constant: INTEGER											{ $$ = IntegerConstantSemanticAction($1); }
-	;
-
-%%
-
-*/

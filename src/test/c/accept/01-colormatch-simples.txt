@@ -1,0 +1,5 @@
+game ColorMatch {
+    players 2 .. 4
+    hand 7
+    win if empty_hand
+}

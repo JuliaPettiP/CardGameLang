@@ -10,96 +10,27 @@ ModuleDestructor initializeAbstractSyntaxTreeModule();
 
 typedef struct Program Program;
 typedef struct Game Game;
+typedef struct PlayerRange PlayerRange;
 
+// Estrutura para os jogadores (ex: 2 ou 2 .. 4)
+struct PlayerRange {
+    int min;
+    int max;
+};
+
+// O nosso jogo principal
 struct Game {
-	char * name;
+    char * name;
+    PlayerRange * players;
+    int handSize;
 };
 
 struct Program {
-	Game * game;
+    Game * game;
 };
 
+void destroyPlayerRange(PlayerRange * range);
 void destroyGame(Game * game);
 void destroyProgram(Program * program);
 
 #endif
-
-
-
-
-/* CODIGO ANTERIRIOR
-
-
-/**
- * This type definitions allows self-referencing types (e.g., an expression
- * that is made of another expressions, such as talking about you in 3rd
- * person, but without the madness).
- */
-
- /*
-typedef enum ExpressionType ExpressionType;
-typedef enum FactorType FactorType;
-
-typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
-typedef struct Program Program;
-
-/**
- * Node types for the Abstract Syntax Tree (AST).
- */
-
- /*
-enum ExpressionType {
-	ADDITION,
-	DIVISION,
-	FACTOR,
-	MULTIPLICATION,
-	SUBTRACTION
-};
-
-enum FactorType {
-	CONSTANT,
-	EXPRESSION
-};
-
-struct Constant {
-	int value;
-};
-
-struct Factor {
-	union {
-		Constant * constant;
-		Expression * expression;
-	};
-	FactorType type;
-};
-
-struct Expression {
-	union {
-		Factor * factor;
-		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
-		};
-	};
-	ExpressionType type;
-};
-
-struct Program {
-	Expression * expression;
-};
-
-/**
- * Node recursive super-duper-trambolik-destructors.
- */
-
- /*
-void destroyConstant(Constant * constant);
-void destroyExpression(Expression * expression);
-void destroyFactor(Factor * factor);
-void destroyProgram(Program * program);
-
-#endif
-
-*/
