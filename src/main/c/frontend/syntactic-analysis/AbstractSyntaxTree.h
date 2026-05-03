@@ -11,25 +11,43 @@ ModuleDestructor initializeAbstractSyntaxTreeModule();
 typedef struct Program Program;
 typedef struct Game Game;
 typedef struct PlayerRange PlayerRange;
+typedef struct Card Card;
+typedef struct CardList CardList;
 
-// Estrutura para os jogadores (ex: 2 ou 2 .. 4)
+// Estrutura para os jogadores
 struct PlayerRange {
     int min;
     int max;
 };
 
-// O nosso jogo principal
+// Estrutura para uma Carta
+struct Card {
+    char * name;
+};
+
+// Lista ligada de Cartas (o Baralho)
+struct CardList {
+    Card * card;
+    struct CardList * next;
+};
+
+// O Jogo Principal
 struct Game {
     char * name;
     PlayerRange * players;
     int handSize;
+    CardList * deck;   // O Baralho!
+    int winCondition;  // Condição de vitória (1 ou 0)
 };
 
 struct Program {
     Game * game;
 };
 
+// Declaração dos destrutores (crítico para o AddressSanitizer)
 void destroyPlayerRange(PlayerRange * range);
+void destroyCard(Card * card);
+void destroyCardList(CardList * list);
 void destroyGame(Game * game);
 void destroyProgram(Program * program);
 

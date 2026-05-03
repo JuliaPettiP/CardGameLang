@@ -9,15 +9,12 @@
 #include "BisonParser.h"
 #include <stdlib.h>
 
-/** Initialize module's internal state. */
-ModuleDestructor initializeBisonActionsModule();
-
-/**
- * Bison semantic actions.
- */
+ModuleDestructor initializeBisonActionsModule(CompilerState * compilerState);
 
 Program * GameProgramSemanticAction(Game * game);
 PlayerRange * PlayerRangeSemanticAction(const int min, const int max);
-Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize);
+Card * CardSemanticAction(char * name);
+CardList * CardListSemanticAction(Card * card, CardList * next);
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, const int winCondition);
 
 #endif

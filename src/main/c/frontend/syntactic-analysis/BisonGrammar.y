@@ -15,86 +15,49 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %locations
 
 %union {
+    signed int integer;
+    char * string;
+    TokenLabel token;
 
-	/** Terminals (Dados que vêm do Lexer)[cite: 3] */
-	signed int integer;
-	char * string;
-	TokenLabel token;
-
-	/** Non-terminals (Nós da Árvore Sintática) */
-	Program * program;
-	Game * game;
-	PlayerRange * player_range;
+    Program * program;
+    Game * game;
+    PlayerRange * player_range;
+    Card * card;
+    CardList * card_list;
 }
 
-/** 
- * Destrutores. Estas funções são executadas se o Bison falhar a meio (ex: erro de sintaxe),
- * garantindo que a memória alocada até ao momento é libertada. Isto evita os erros de
- * status 1 causados pelas memory leaks e satisfaz o AddressSanitizer. 
- */
 %destructor { destroyGame($$); } <game>
 %destructor { destroyPlayerRange($$); } <player_range>
+%destructor { destroyCard($$); } <card>
+%destructor { destroyCardList($$); } <card_list>
 %destructor { free($$); } <string>
 
-/** Terminals (Keywords do jogo definidas no Flex)[cite: 3] */
+/** Terminals (Mantém todos os que a Julia já fez) */
 %token <integer> INTEGER
 %token <string> IDENTIFIER
+%token <token> GAME PLAYERS DECK CARD HAND PLAY_RULE RULES TURN ACTIONS WIN
+%token <token> IF ALLOW PLAYED CANNOT_PLAY ELSE MAY MUST
+%token <token> EMPTY_HAND REACH_POINTS SAME_COLOR SAME_VALUE WILD ANY_CARD
+%token <token> RANGE OPEN_BRACE CLOSE_BRACE OPEN_COMMENT CLOSE_COMMENT COMMA IGNORED UNKNOWN
 
-%token <token> GAME
-%token <token> PLAYERS
-%token <token> DECK
-%token <token> CARD
-%token <token> HAND
-%token <token> PLAY_RULE
-%token <token> RULES
-%token <token> TURN
-%token <token> ACTIONS
-%token <token> WIN
-
-%token <token> IF
-%token <token> ALLOW
-%token <token> PLAYED
-%token <token> CANNOT_PLAY
-%token <token> ELSE
-%token <token> MAY
-%token <token> MUST
-
-%token <token> EMPTY_HAND
-%token <token> REACH_POINTS
-%token <token> SAME_COLOR
-%token <token> SAME_VALUE
-%token <token> WILD
-%token <token> ANY_CARD
-
-%token <token> RANGE
-%token <token> OPEN_BRACE
-%token <token> CLOSE_BRACE
-%token <token> OPEN_COMMENT
-%token <token> CLOSE_COMMENT
-%token <token> COMMA
-
-%token <token> IGNORED
-%token <token> UNKNOWN
-
-/** Non-terminals (Tipos devolvidos pelas regras abaixo) */
+/** Non-terminals */
 %type <program> program
 %type <game> card_game
 %type <player_range> players_section
-%type <integer> hand_section
+%type <integer> hand_section win_section
+%type <card_list> deck_section card_list
+%type <card> card_definition
 
 %%
 
-// Regra raiz do compilador
 program: card_game { 
     $$ = GameProgramSemanticAction($1); 
 }
 
-// A estrutura principal do jogo
-card_game: GAME IDENTIFIER OPEN_BRACE players_section hand_section win_section CLOSE_BRACE { 
-    $$ = GameSemanticAction($2, $4, $5); 
+card_game: GAME IDENTIFIER OPEN_BRACE players_section hand_section deck_section win_section CLOSE_BRACE { 
+    $$ = GameSemanticAction($2, $4, $5, $6, $7); 
 }
 
-// Secção de jogadores: suporta tanto "players 2" como "players 2 .. 4"
 players_section: PLAYERS INTEGER RANGE INTEGER {
     $$ = PlayerRangeSemanticAction($2, $4);
 }
@@ -102,14 +65,34 @@ players_section: PLAYERS INTEGER RANGE INTEGER {
     $$ = PlayerRangeSemanticAction($2, $2);
 }
 
-// Secção da mão devolve diretamente um inteiro (não precisa de AST extra para já)
 hand_section: HAND INTEGER {
     $$ = $2;
 }
 
-// A secção de vitória provisória. Por agora, não tem ação semântica associada[cite: 3].
+// O Baralho começa com DECK e devolve uma lista de cartas
+deck_section: DECK OPEN_BRACE card_list CLOSE_BRACE {
+    $$ = $3;
+}
+
+// Uma lista é formada por uma carta...
+card_list: card_definition {
+    $$ = CardListSemanticAction($1, NULL);
+}
+// ...ou por uma carta seguida de mais cartas
+| card_definition card_list {
+    $$ = CardListSemanticAction($1, $2);
+}
+
+// A definição individual de uma carta
+card_definition: CARD IDENTIFIER OPEN_BRACE CLOSE_BRACE {
+    $$ = CardSemanticAction($2);
+}
+
 win_section: WIN IF EMPTY_HAND {
-    // Fica vazio até expandirmos o AST com as regras de vitória.
+    $$ = 1;
+}
+| /* VAZIO */ {
+    $$ = 0;
 }
 
 %%

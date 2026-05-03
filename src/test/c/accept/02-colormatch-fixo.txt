@@ -1,5 +1,0 @@
-game Uno {
-    players 4
-    hand 5
-    win if empty_hand
-}

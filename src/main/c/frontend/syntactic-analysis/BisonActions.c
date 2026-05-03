@@ -1,40 +1,26 @@
 #include "BisonActions.h"
 
-/* MODULE INTERNAL STATE */
-
 static CompilerState * _compilerState = NULL;
 static Logger * _logger = NULL;
 
-/** Shutdown module's internal state. */
 void _shutdownBisonActionsModule() {
-	if (_logger != NULL) {
-		logDebugging(_logger, "Destroying module: BisonActions...");
-		destroyLogger(_logger);
-		_logger = NULL;
-	}
-	_compilerState = NULL;
+    if (_logger != NULL) {
+        logDebugging(_logger, "Destroying module: BisonActions...");
+        destroyLogger(_logger);
+        _logger = NULL;
+    }
+    _compilerState = NULL;
 }
 
 ModuleDestructor initializeBisonActionsModule(CompilerState * compilerState) {
-	_compilerState = compilerState;
-	_logger = createLogger("BisonActions");
-	return _shutdownBisonActionsModule;
+    _compilerState = compilerState;
+    _logger = createLogger("BisonActions");
+    return _shutdownBisonActionsModule;
 }
 
-/* IMPORTED FUNCTIONS */
-
-/* PRIVATE FUNCTIONS */
-
-static void _logSyntacticAnalyzerAction(const char * functionName);
-
-/**
- * Logs a syntactic-analyzer action in DEBUGGING level.
- */
 static void _logSyntacticAnalyzerAction(const char * functionName) {
-	logDebugging(_logger, "%s", functionName);
+    logDebugging(_logger, "%s", functionName);
 }
-
-/* PUBLIC FUNCTIONS */
 
 PlayerRange * PlayerRangeSemanticAction(const int min, const int max) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
@@ -44,12 +30,29 @@ PlayerRange * PlayerRangeSemanticAction(const int min, const int max) {
     return range;
 }
 
-Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize) {
+Card * CardSemanticAction(char * name) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Card * card = calloc(1, sizeof(Card));
+    card->name = name;
+    return card;
+}
+
+CardList * CardListSemanticAction(Card * card, CardList * next) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    CardList * list = calloc(1, sizeof(CardList));
+    list->card = card;
+    list->next = next;
+    return list;
+}
+
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, const int winCondition) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Game * game = calloc(1, sizeof(Game));
-    game->name = name; // Não faças strdup aqui, o Flex já o fez!
+    game->name = name; 
     game->players = players;
     game->handSize = handSize;
+    game->deck = deck;
+    game->winCondition = winCondition;
     return game;
 }
 
