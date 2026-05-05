@@ -22,6 +22,57 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
     logDebugging(_logger, "%s", functionName);
 }
 
+/* ------------------------------------------------------------------ */
+/*  Win condition                                                       */
+/* ------------------------------------------------------------------ */
+
+WinCondition * WinEmptyHandSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    WinCondition * win = calloc(1, sizeof(WinCondition));
+    win->type = WIN_EMPTY_HAND;
+    win->points = 0;
+    return win;
+}
+
+WinCondition * WinPointsSemanticAction(int points) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    WinCondition * win = calloc(1, sizeof(WinCondition));
+    win->type = WIN_REACH_POINTS;
+    win->points = points;
+    return win;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Turn / Actions                                                      */
+/* ------------------------------------------------------------------ */
+
+TurnAction * TurnActionSemanticAction(TurnActionType type, char * name) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    TurnAction * action = calloc(1, sizeof(TurnAction));
+    action->type = type;
+    action->name = name;  /* ownership of the strdup'd string transfers here */
+    return action;
+}
+
+TurnActionList * TurnActionListSemanticAction(TurnAction * action, TurnActionList * next) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    TurnActionList * list = calloc(1, sizeof(TurnActionList));
+    list->action = action;
+    list->next = next;
+    return list;
+}
+
+Turn * TurnSemanticAction(TurnActionList * actions) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Turn * turn = calloc(1, sizeof(Turn));
+    turn->actions = actions;
+    return turn;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Game tree nodes                                                     */
+/* ------------------------------------------------------------------ */
+
 PlayerRange * PlayerRangeSemanticAction(const int min, const int max) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     PlayerRange * range = calloc(1, sizeof(PlayerRange));
@@ -45,13 +96,14 @@ CardList * CardListSemanticAction(Card * card, CardList * next) {
     return list;
 }
 
-Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, const int winCondition) {
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, Turn * turn, WinCondition * winCondition) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Game * game = calloc(1, sizeof(Game));
-    game->name = name; 
+    game->name = name;
     game->players = players;
     game->handSize = handSize;
     game->deck = deck;
+    game->turn = turn;              /* may be NULL */
     game->winCondition = winCondition;
     return game;
 }

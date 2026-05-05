@@ -3,7 +3,6 @@
 /* MODULE INTERNAL STATE */
 static Logger * _logger = NULL;
 
-/** Shutdown module's internal state. */
 void _shutdownAbstractSyntaxTreeModule() {
     if (_logger != NULL) {
         logDebugging(_logger, "Destroying module: AbstractSyntaxTree...");
@@ -18,6 +17,35 @@ ModuleDestructor initializeAbstractSyntaxTreeModule() {
 }
 
 /* PUBLIC FUNCTIONS */
+
+void destroyWinCondition(WinCondition * winCondition) {
+    if (winCondition != NULL) {
+        free(winCondition);
+    }
+}
+
+void destroyTurnAction(TurnAction * action) {
+    if (action != NULL) {
+        if (action->name != NULL) free(action->name);
+        free(action);
+    }
+}
+
+void destroyTurnActionList(TurnActionList * list) {
+    if (list != NULL) {
+        destroyTurnAction(list->action);
+        destroyTurnActionList(list->next);
+        free(list);
+    }
+}
+
+void destroyTurn(Turn * turn) {
+    if (turn != NULL) {
+        destroyTurnActionList(turn->actions);
+        free(turn);
+    }
+}
+
 void destroyPlayerRange(PlayerRange * range) {
     if (range != NULL) {
         free(range);
@@ -26,24 +54,26 @@ void destroyPlayerRange(PlayerRange * range) {
 
 void destroyCard(Card * card) {
     if (card != NULL) {
-        if (card->name != NULL) free(card->name); // Liberta a string do nome
+        if (card->name != NULL) free(card->name);
         free(card);
     }
 }
 
 void destroyCardList(CardList * list) {
     if (list != NULL) {
-        destroyCard(list->card);     // Liberta a carta deste nó
-        destroyCardList(list->next); // Chama a próxima (recursividade)
-        free(list);                  // Liberta o próprio nó
+        destroyCard(list->card);
+        destroyCardList(list->next);
+        free(list);
     }
 }
 
 void destroyGame(Game * game) {
     if (game != NULL) {
-        destroyPlayerRange(game->players);
-        destroyCardList(game->deck); // Limpa o baralho inteiro
         if (game->name != NULL) free(game->name);
+        destroyPlayerRange(game->players);
+        destroyCardList(game->deck);
+        destroyTurn(game->turn);
+        destroyWinCondition(game->winCondition);
         free(game);
     }
 }

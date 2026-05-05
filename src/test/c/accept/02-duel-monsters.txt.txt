@@ -1,10 +1,14 @@
-game DuelMonsters {
+game TestTurn {
     players 2
     hand 5
     deck {
-        card DarkMagician { }
-        card BlueEyes { }
-        card TrapHole { }
-        card PotOfGreed { }
+        card Ace { }
     }
+    turn {
+        actions {
+            must play
+            may draw
+        }
+    }
+    win if empty_hand
 }

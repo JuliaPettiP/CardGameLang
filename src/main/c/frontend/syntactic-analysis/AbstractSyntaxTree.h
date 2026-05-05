@@ -13,38 +13,99 @@ typedef struct Game Game;
 typedef struct PlayerRange PlayerRange;
 typedef struct Card Card;
 typedef struct CardList CardList;
+typedef struct WinCondition WinCondition;
+typedef struct TurnAction TurnAction;
+typedef struct TurnActionList TurnActionList;
+typedef struct Turn Turn;
 
-// Estrutura para os jogadores
+/* ------------------------------------------------------------------ */
+/*  Win condition                                                       */
+/* ------------------------------------------------------------------ */
+
+typedef enum {
+    WIN_EMPTY_HAND,   /* win if empty_hand  */
+    WIN_REACH_POINTS  /* win if reach_points <N> */
+} WinConditionType;
+
+struct WinCondition {
+    WinConditionType type;
+    int points;   /* only used when type == WIN_REACH_POINTS */
+};
+
+/* ------------------------------------------------------------------ */
+/*  Players                                                             */
+/* ------------------------------------------------------------------ */
+
 struct PlayerRange {
     int min;
     int max;
 };
 
-// Estrutura para uma Carta
+/* ------------------------------------------------------------------ */
+/*  Cards / Deck                                                        */
+/* ------------------------------------------------------------------ */
+
 struct Card {
     char * name;
 };
 
-// Lista ligada de Cartas (o Baralho)
 struct CardList {
     Card * card;
     struct CardList * next;
 };
 
-// O Jogo Principal
+/* ------------------------------------------------------------------ */
+/*  Turn / Actions                                                      */
+/* ------------------------------------------------------------------ */
+
+typedef enum {
+    ACTION_MAY,   /* may <name> — optional action */
+    ACTION_MUST   /* must <name> — mandatory action */
+} TurnActionType;
+
+struct TurnAction {
+    TurnActionType type;  /* MAY or MUST */
+    char * name;          /* action identifier, e.g. "play", "draw" */
+};
+
+struct TurnActionList {
+    TurnAction * action;
+    struct TurnActionList * next;
+};
+
+struct Turn {
+    TurnActionList * actions;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Game                                                                */
+/* ------------------------------------------------------------------ */
+
 struct Game {
     char * name;
     PlayerRange * players;
     int handSize;
-    CardList * deck;   // O Baralho!
-    int winCondition;  // Condição de vitória (1 ou 0)
+    CardList * deck;
+    Turn * turn;              /* may be NULL if section is absent */
+    WinCondition * winCondition;
 };
+
+/* ------------------------------------------------------------------ */
+/*  Program (root)                                                      */
+/* ------------------------------------------------------------------ */
 
 struct Program {
     Game * game;
 };
 
-// Declaração dos destrutores (crítico para o AddressSanitizer)
+/* ------------------------------------------------------------------ */
+/*  Destructors                                                         */
+/* ------------------------------------------------------------------ */
+
+void destroyWinCondition(WinCondition * winCondition);
+void destroyTurnAction(TurnAction * action);
+void destroyTurnActionList(TurnActionList * list);
+void destroyTurn(Turn * turn);
 void destroyPlayerRange(PlayerRange * range);
 void destroyCard(Card * card);
 void destroyCardList(CardList * list);

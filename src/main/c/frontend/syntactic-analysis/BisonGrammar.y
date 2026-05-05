@@ -24,15 +24,23 @@ void yyerror(const YYLTYPE * location, const char * message) {}
     PlayerRange * player_range;
     Card * card;
     CardList * card_list;
+    WinCondition * win_condition;
+    TurnAction * turn_action;
+    TurnActionList * turn_action_list;
+    Turn * turn;
 }
 
 %destructor { destroyGame($$); } <game>
 %destructor { destroyPlayerRange($$); } <player_range>
 %destructor { destroyCard($$); } <card>
 %destructor { destroyCardList($$); } <card_list>
+%destructor { destroyWinCondition($$); } <win_condition>
+%destructor { destroyTurnAction($$); } <turn_action>
+%destructor { destroyTurnActionList($$); } <turn_action_list>
+%destructor { destroyTurn($$); } <turn>
 %destructor { free($$); } <string>
 
-/** Terminals (Mantém todos os que a Julia já fez) */
+/** Terminals */
 %token <integer> INTEGER
 %token <string> IDENTIFIER
 %token <token> GAME PLAYERS DECK CARD HAND PLAY_RULE RULES TURN ACTIONS WIN
@@ -44,18 +52,22 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <program> program
 %type <game> card_game
 %type <player_range> players_section
-%type <integer> hand_section win_section
+%type <integer> hand_section
 %type <card_list> deck_section card_list
 %type <card> card_definition
+%type <win_condition> win_section
+%type <turn> turn_section
+%type <turn_action> action_item
+%type <turn_action_list> action_list
 
 %%
 
-program: card_game { 
-    $$ = GameProgramSemanticAction($1); 
+program: card_game {
+    $$ = GameProgramSemanticAction($1);
 }
 
-card_game: GAME IDENTIFIER OPEN_BRACE players_section hand_section deck_section win_section CLOSE_BRACE { 
-    $$ = GameSemanticAction($2, $4, $5, $6, $7); 
+card_game: GAME IDENTIFIER OPEN_BRACE players_section hand_section deck_section turn_section win_section CLOSE_BRACE {
+    $$ = GameSemanticAction($2, $4, $5, $6, $7, $8);
 }
 
 players_section: PLAYERS INTEGER RANGE INTEGER {
@@ -69,30 +81,69 @@ hand_section: HAND INTEGER {
     $$ = $2;
 }
 
-// O Baralho começa com DECK e devolve uma lista de cartas
 deck_section: DECK OPEN_BRACE card_list CLOSE_BRACE {
     $$ = $3;
 }
 
-// Uma lista é formada por uma carta...
 card_list: card_definition {
     $$ = CardListSemanticAction($1, NULL);
 }
-// ...ou por uma carta seguida de mais cartas
 | card_definition card_list {
     $$ = CardListSemanticAction($1, $2);
 }
 
-// A definição individual de uma carta
 card_definition: CARD IDENTIFIER OPEN_BRACE CLOSE_BRACE {
     $$ = CardSemanticAction($2);
 }
 
-win_section: WIN IF EMPTY_HAND {
-    $$ = 1;
+/*
+ * turn_section
+ *   turn { actions { <action_list> } }
+ *   (absent) → NULL
+ */
+turn_section: TURN OPEN_BRACE ACTIONS OPEN_BRACE action_list CLOSE_BRACE CLOSE_BRACE {
+    $$ = TurnSemanticAction($5);
 }
-| /* VAZIO */ {
-    $$ = 0;
+| /* empty */ {
+    $$ = NULL;
+}
+
+/*
+ * action_list — one or more action_item entries (left-recursive to avoid stack growth)
+ */
+action_list: action_item {
+    $$ = TurnActionListSemanticAction($1, NULL);
+}
+| action_item action_list {
+    $$ = TurnActionListSemanticAction($1, $2);
+}
+
+/*
+ * action_item
+ *   may  IDENTIFIER   → ACTION_MAY
+ *   must IDENTIFIER   → ACTION_MUST
+ */
+action_item: MAY IDENTIFIER {
+    $$ = TurnActionSemanticAction(ACTION_MAY, $2);
+}
+| MUST IDENTIFIER {
+    $$ = TurnActionSemanticAction(ACTION_MUST, $2);
+}
+
+/*
+ * win_section
+ *   win if empty_hand         → WinCondition { WIN_EMPTY_HAND, 0 }
+ *   win if reach_points <N>   → WinCondition { WIN_REACH_POINTS, N }
+ *   (absent)                  → NULL  (game has no explicit win condition)
+ */
+win_section: WIN IF EMPTY_HAND {
+    $$ = WinEmptyHandSemanticAction();
+}
+| WIN IF REACH_POINTS INTEGER {
+    $$ = WinPointsSemanticAction($4);
+}
+| /* empty */ {
+    $$ = NULL;
 }
 
 %%
