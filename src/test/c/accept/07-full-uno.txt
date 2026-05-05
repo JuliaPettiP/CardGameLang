@@ -1,0 +1,26 @@
+/* Test 07 — full game with play_rule + turn (with actions) + win
+   Expected: ACCEPT
+   Covers: integration of all three sections from Etapas 1, 2, and 3 */
+
+game FullUno {
+    players 2 .. 10
+    hand 7
+    deck {
+        card RedCard { }
+        card BlueCard { }
+        card WildCard { }
+        card DrawTwo { }
+    }
+    play_rule {
+        allow if same_color
+        allow if same_value
+        allow if wild
+    }
+    turn {
+        actions {
+            may play
+            may draw
+        }
+    }
+    win if empty_hand
+}

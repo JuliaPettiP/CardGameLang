@@ -1,0 +1,17 @@
+/* Test 05 — play_rule with any_card condition and reach_points win
+   Expected: ACCEPT
+   Covers: PLAY_CONDITION_ANY_CARD, WIN_REACH_POINTS */
+
+game HighPoints {
+    players 2
+    hand 5
+    deck {
+        card LowCard { }
+        card HighCard { }
+        card BonusCard { }
+    }
+    play_rule {
+        allow if any_card
+    }
+    win if reach_points 21
+}

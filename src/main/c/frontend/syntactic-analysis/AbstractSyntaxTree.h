@@ -17,6 +17,8 @@ typedef struct WinCondition WinCondition;
 typedef struct TurnAction TurnAction;
 typedef struct TurnActionList TurnActionList;
 typedef struct Turn Turn;
+typedef struct PlayRule PlayRule;
+typedef struct PlayRuleList PlayRuleList;
 
 /* ------------------------------------------------------------------ */
 /*  Win condition                                                       */
@@ -78,6 +80,35 @@ struct Turn {
 };
 
 /* ------------------------------------------------------------------ */
+/*  Play rules                                                          */
+/* ------------------------------------------------------------------ */
+
+typedef enum {
+    PLAY_RULE_ALLOW,       /* allow ... */
+    PLAY_RULE_CANNOT_PLAY  /* cannot_play ... */
+} PlayRulePermission;
+
+typedef enum {
+    PLAY_CONDITION_SAME_COLOR,   /* allow if same_color                      */
+    PLAY_CONDITION_SAME_VALUE,   /* allow if same_value                      */
+    PLAY_CONDITION_WILD,         /* allow if wild                            */
+    PLAY_CONDITION_ANY_CARD,     /* allow if any_card                        */
+    PLAY_CONDITION_PLAYED_CARD   /* allow/cannot_play X if played Y          */
+} PlayConditionType;
+
+struct PlayRule {
+    PlayRulePermission permission;  /* ALLOW or CANNOT_PLAY                  */
+    char * subject;                 /* card name for PLAYED_CARD; else NULL  */
+    PlayConditionType condition;
+    char * conditionTarget;         /* card name after "if played"; else NULL */
+};
+
+struct PlayRuleList {
+    PlayRule * rule;
+    struct PlayRuleList * next;
+};
+
+/* ------------------------------------------------------------------ */
 /*  Game                                                                */
 /* ------------------------------------------------------------------ */
 
@@ -86,7 +117,8 @@ struct Game {
     PlayerRange * players;
     int handSize;
     CardList * deck;
-    Turn * turn;              /* may be NULL if section is absent */
+    PlayRuleList * playRules;     /* may be NULL if section is absent */
+    Turn * turn;
     WinCondition * winCondition;
 };
 
@@ -106,6 +138,8 @@ void destroyWinCondition(WinCondition * winCondition);
 void destroyTurnAction(TurnAction * action);
 void destroyTurnActionList(TurnActionList * list);
 void destroyTurn(Turn * turn);
+void destroyPlayRule(PlayRule * rule);
+void destroyPlayRuleList(PlayRuleList * list);
 void destroyPlayerRange(PlayerRange * range);
 void destroyCard(Card * card);
 void destroyCardList(CardList * list);

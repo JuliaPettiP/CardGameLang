@@ -28,6 +28,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
     TurnAction * turn_action;
     TurnActionList * turn_action_list;
     Turn * turn;
+    PlayRule * play_rule;
+    PlayRuleList * play_rule_list;
 }
 
 %destructor { destroyGame($$); } <game>
@@ -38,6 +40,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %destructor { destroyTurnAction($$); } <turn_action>
 %destructor { destroyTurnActionList($$); } <turn_action_list>
 %destructor { destroyTurn($$); } <turn>
+%destructor { destroyPlayRule($$); } <play_rule>
+%destructor { destroyPlayRuleList($$); } <play_rule_list>
 %destructor { free($$); } <string>
 
 /** Terminals */
@@ -59,6 +63,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <turn> turn_section
 %type <turn_action> action_item
 %type <turn_action_list> action_list
+%type <play_rule_list> play_rule_section play_rule_list
+%type <play_rule> play_rule_item
 
 %%
 
@@ -66,8 +72,8 @@ program: card_game {
     $$ = GameProgramSemanticAction($1);
 }
 
-card_game: GAME IDENTIFIER OPEN_BRACE players_section hand_section deck_section turn_section win_section CLOSE_BRACE {
-    $$ = GameSemanticAction($2, $4, $5, $6, $7, $8);
+card_game: GAME IDENTIFIER OPEN_BRACE players_section hand_section deck_section play_rule_section turn_section win_section CLOSE_BRACE {
+    $$ = GameSemanticAction($2, $4, $5, $6, $7, $8, $9);
 }
 
 players_section: PLAYERS INTEGER RANGE INTEGER {
@@ -94,6 +100,57 @@ card_list: card_definition {
 
 card_definition: CARD IDENTIFIER OPEN_BRACE CLOSE_BRACE {
     $$ = CardSemanticAction($2);
+}
+
+/*
+ * play_rule_section
+ *   play_rule { <play_rule_list> }
+ *   (absent) → NULL
+ */
+play_rule_section: PLAY_RULE OPEN_BRACE play_rule_list CLOSE_BRACE {
+    $$ = $3;
+}
+| /* empty */ {
+    $$ = NULL;
+}
+
+/*
+ * play_rule_list — one or more play_rule_item entries
+ */
+play_rule_list: play_rule_item {
+    $$ = PlayRuleListSemanticAction($1, NULL);
+}
+| play_rule_item play_rule_list {
+    $$ = PlayRuleListSemanticAction($1, $2);
+}
+
+/*
+ * play_rule_item — the six rule forms supported by the lexer:
+ *
+ *   allow if same_color
+ *   allow if same_value
+ *   allow if wild
+ *   allow if any_card
+ *   allow      <CardName> if played <CardName>
+ *   cannot_play <CardName> if played <CardName>
+ */
+play_rule_item: ALLOW IF SAME_COLOR {
+    $$ = PlayRuleSemanticAction(PLAY_RULE_ALLOW, NULL, PLAY_CONDITION_SAME_COLOR, NULL);
+}
+| ALLOW IF SAME_VALUE {
+    $$ = PlayRuleSemanticAction(PLAY_RULE_ALLOW, NULL, PLAY_CONDITION_SAME_VALUE, NULL);
+}
+| ALLOW IF WILD {
+    $$ = PlayRuleSemanticAction(PLAY_RULE_ALLOW, NULL, PLAY_CONDITION_WILD, NULL);
+}
+| ALLOW IF ANY_CARD {
+    $$ = PlayRuleSemanticAction(PLAY_RULE_ALLOW, NULL, PLAY_CONDITION_ANY_CARD, NULL);
+}
+| ALLOW IDENTIFIER IF PLAYED IDENTIFIER {
+    $$ = PlayRuleSemanticAction(PLAY_RULE_ALLOW, $2, PLAY_CONDITION_PLAYED_CARD, $5);
+}
+| CANNOT_PLAY IDENTIFIER IF PLAYED IDENTIFIER {
+    $$ = PlayRuleSemanticAction(PLAY_RULE_CANNOT_PLAY, $2, PLAY_CONDITION_PLAYED_CARD, $5);
 }
 
 /*

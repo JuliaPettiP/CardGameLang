@@ -46,6 +46,22 @@ void destroyTurn(Turn * turn) {
     }
 }
 
+void destroyPlayRule(PlayRule * rule) {
+    if (rule != NULL) {
+        if (rule->subject != NULL) free(rule->subject);
+        if (rule->conditionTarget != NULL) free(rule->conditionTarget);
+        free(rule);
+    }
+}
+
+void destroyPlayRuleList(PlayRuleList * list) {
+    if (list != NULL) {
+        destroyPlayRule(list->rule);
+        destroyPlayRuleList(list->next);
+        free(list);
+    }
+}
+
 void destroyPlayerRange(PlayerRange * range) {
     if (range != NULL) {
         free(range);
@@ -72,6 +88,7 @@ void destroyGame(Game * game) {
         if (game->name != NULL) free(game->name);
         destroyPlayerRange(game->players);
         destroyCardList(game->deck);
+        destroyPlayRuleList(game->playRules);
         destroyTurn(game->turn);
         destroyWinCondition(game->winCondition);
         free(game);

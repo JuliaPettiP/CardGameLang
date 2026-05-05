@@ -70,6 +70,28 @@ Turn * TurnSemanticAction(TurnActionList * actions) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Play rules                                                          */
+/* ------------------------------------------------------------------ */
+
+PlayRule * PlayRuleSemanticAction(PlayRulePermission permission, char * subject, PlayConditionType condition, char * conditionTarget) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    PlayRule * rule = calloc(1, sizeof(PlayRule));
+    rule->permission = permission;
+    rule->subject = subject;               /* NULL for keyword conditions  */
+    rule->condition = condition;
+    rule->conditionTarget = conditionTarget; /* NULL when not PLAYED_CARD  */
+    return rule;
+}
+
+PlayRuleList * PlayRuleListSemanticAction(PlayRule * rule, PlayRuleList * next) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    PlayRuleList * list = calloc(1, sizeof(PlayRuleList));
+    list->rule = rule;
+    list->next = next;
+    return list;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Game tree nodes                                                     */
 /* ------------------------------------------------------------------ */
 
@@ -96,13 +118,14 @@ CardList * CardListSemanticAction(Card * card, CardList * next) {
     return list;
 }
 
-Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, Turn * turn, WinCondition * winCondition) {
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, Turn * turn, WinCondition * winCondition) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Game * game = calloc(1, sizeof(Game));
     game->name = name;
     game->players = players;
     game->handSize = handSize;
     game->deck = deck;
+    game->playRules = playRules;    /* may be NULL */
     game->turn = turn;              /* may be NULL */
     game->winCondition = winCondition;
     return game;

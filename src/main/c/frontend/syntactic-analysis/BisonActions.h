@@ -20,11 +20,15 @@ TurnAction * TurnActionSemanticAction(TurnActionType type, char * name);
 TurnActionList * TurnActionListSemanticAction(TurnAction * action, TurnActionList * next);
 Turn * TurnSemanticAction(TurnActionList * actions);
 
+/* Play rules */
+PlayRule * PlayRuleSemanticAction(PlayRulePermission permission, char * subject, PlayConditionType condition, char * conditionTarget);
+PlayRuleList * PlayRuleListSemanticAction(PlayRule * rule, PlayRuleList * next);
+
 /* Game tree nodes */
 Program * GameProgramSemanticAction(Game * game);
 PlayerRange * PlayerRangeSemanticAction(const int min, const int max);
 Card * CardSemanticAction(char * name);
 CardList * CardListSemanticAction(Card * card, CardList * next);
-Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, Turn * turn, WinCondition * winCondition);
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, Turn * turn, WinCondition * winCondition);
 
 #endif
