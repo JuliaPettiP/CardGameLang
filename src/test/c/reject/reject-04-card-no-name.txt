@@ -1,0 +1,12 @@
+/* Reject 04 — Card without a name: card { } omits mandatory IDENTIFIER
+   Expected: REJECT (parse error — grammar requires CARD IDENTIFIER OPEN_BRACE ...)
+   Covers: spec rejection case III — card defined without name */
+
+game NoCardName {
+    players 2
+    deck {
+        card { }
+    }
+    hand 5
+    win if empty_hand
+}

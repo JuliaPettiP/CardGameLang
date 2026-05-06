@@ -30,6 +30,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
     Turn * turn;
     PlayRule * play_rule;
     PlayRuleList * play_rule_list;
+    ColorList * color_list;
+    CardAttribute * card_attribute;
+    CardAttributeList * card_attribute_list;
+    ActionNameList * action_name_list;
 }
 
 %destructor { destroyGame($$); } <game>
@@ -42,6 +46,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %destructor { destroyTurn($$); } <turn>
 %destructor { destroyPlayRule($$); } <play_rule>
 %destructor { destroyPlayRuleList($$); } <play_rule_list>
+%destructor { destroyColorList($$); } <color_list>
+%destructor { destroyCardAttribute($$); } <card_attribute>
+%destructor { destroyCardAttributeList($$); } <card_attribute_list>
+%destructor { destroyActionNameList($$); } <action_name_list>
 %destructor { free($$); } <string>
 
 /** Terminals */
@@ -50,6 +58,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> GAME PLAYERS DECK CARD HAND PLAY_RULE RULES TURN ACTIONS WIN
 %token <token> IF ALLOW PLAYED CANNOT_PLAY ELSE MAY MUST
 %token <token> EMPTY_HAND REACH_POINTS SAME_COLOR SAME_VALUE WILD ANY_CARD
+%token <token> COLOR VALUE POINTS EFFECT
 %token <token> RANGE OPEN_BRACE CLOSE_BRACE OPEN_COMMENT CLOSE_COMMENT COMMA IGNORED UNKNOWN
 
 /** Non-terminals */
@@ -59,6 +68,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <integer> hand_section
 %type <card_list> deck_section card_list
 %type <card> card_definition
+%type <card_attribute_list> card_attribute_list
+%type <card_attribute> card_attribute
+%type <color_list> color_list
+%type <action_name_list> actions_section action_name_list
 %type <win_condition> win_section
 %type <turn> turn_section turn_body
 %type <turn_action> turn_statement
@@ -72,9 +85,9 @@ program: card_game {
     $$ = GameProgramSemanticAction($1);
 }
 
-card_game: GAME IDENTIFIER OPEN_BRACE players_section deck_section hand_section play_rule_section turn_section win_section CLOSE_BRACE {
-    /* $2=name  $4=players  $5=deck  $6=handSize  $7=playRules  $8=turn  $9=win */
-    $$ = GameSemanticAction($2, $4, $6, $5, $7, $8, $9);
+card_game: GAME IDENTIFIER OPEN_BRACE players_section deck_section hand_section play_rule_section turn_section actions_section win_section CLOSE_BRACE {
+    /* $2=name  $4=players  $5=deck  $6=handSize  $7=playRules  $8=turn  $9=actions  $10=win */
+    $$ = GameSemanticAction($2, $4, $6, $5, $7, $8, $9, $10);
 }
 
 players_section: PLAYERS INTEGER RANGE INTEGER {
@@ -99,8 +112,93 @@ card_list: card_definition {
     $$ = CardListSemanticAction($1, $2);
 }
 
-card_definition: CARD IDENTIFIER OPEN_BRACE CLOSE_BRACE {
-    $$ = CardSemanticAction($2);
+card_definition: CARD IDENTIFIER OPEN_BRACE card_attribute_list CLOSE_BRACE {
+    $$ = CardSemanticAction($2, $4);
+}
+
+/*
+ * card_attribute_list — zero or more attributes inside a card body
+ *   (absent) → NULL, which preserves backward compatibility with card Name { }
+ */
+card_attribute_list: card_attribute card_attribute_list {
+    $$ = CardAttributeListSemanticAction($1, $2);
+}
+| /* empty */ {
+    $$ = NULL;
+}
+
+/*
+ * card_attribute — one of four attribute kinds:
+ *
+ *   color { red, blue, green, yellow }   → CARD_ATTR_COLOR  (list)
+ *   color gold                           → CARD_ATTR_COLOR  (single)
+ *   value 0..9                           → CARD_ATTR_VALUE  (range)
+ *   value 5                              → CARD_ATTR_VALUE  (single)
+ *   points 1..3                          → CARD_ATTR_POINTS (range)
+ *   points 5                             → CARD_ATTR_POINTS (single)
+ *   effect skip_next_player              → CARD_ATTR_EFFECT (no count)
+ *   effect draw 2                        → CARD_ATTR_EFFECT (with count)
+ *
+ * SR note: "EFFECT IDENTIFIER" vs "EFFECT IDENTIFIER INTEGER" and
+ *          "VALUE/POINTS INTEGER" vs "VALUE/POINTS INTEGER RANGE INTEGER"
+ * are resolved by Bison's default shift preference — always correct here.
+ */
+card_attribute: COLOR OPEN_BRACE color_list CLOSE_BRACE {
+    $$ = CardColorListSemanticAction($3);
+}
+| COLOR IDENTIFIER {
+    $$ = CardColorSingleSemanticAction($2);
+}
+| VALUE INTEGER RANGE INTEGER {
+    $$ = CardValueSemanticAction($2, $4);
+}
+| VALUE INTEGER {
+    $$ = CardValueSemanticAction($2, $2);
+}
+| POINTS INTEGER RANGE INTEGER {
+    $$ = CardPointsSemanticAction($2, $4);
+}
+| POINTS INTEGER {
+    $$ = CardPointsSemanticAction($2, $2);
+}
+| EFFECT IDENTIFIER INTEGER {
+    $$ = CardEffectSemanticAction($2, $3);
+}
+| EFFECT IDENTIFIER {
+    $$ = CardEffectSemanticAction($2, 0);
+}
+
+/*
+ * color_list — comma-separated list of color identifiers
+ *   red, blue, green, yellow
+ */
+color_list: IDENTIFIER {
+    $$ = ColorListSemanticAction($1, NULL);
+}
+| IDENTIFIER COMMA color_list {
+    $$ = ColorListSemanticAction($1, $3);
+}
+
+/*
+ * actions_section — declares the valid action names for the game (P2)
+ *   actions { draw play choose_color }
+ *   (absent) → NULL
+ */
+actions_section: ACTIONS OPEN_BRACE action_name_list CLOSE_BRACE {
+    $$ = $3;
+}
+| /* empty */ {
+    $$ = NULL;
+}
+
+/*
+ * action_name_list — space-separated list of action identifiers
+ */
+action_name_list: IDENTIFIER {
+    $$ = ActionNameListSemanticAction($1, NULL);
+}
+| IDENTIFIER action_name_list {
+    $$ = ActionNameListSemanticAction($1, $2);
 }
 
 /*

@@ -65,6 +65,38 @@ void destroyPlayRuleList(PlayRuleList * list) {
     }
 }
 
+void destroyColorList(ColorList * list) {
+    if (list != NULL) {
+        if (list->color != NULL) free(list->color);
+        destroyColorList(list->next);
+        free(list);
+    }
+}
+
+void destroyCardAttribute(CardAttribute * attribute) {
+    if (attribute != NULL) {
+        destroyColorList(attribute->colors);
+        if (attribute->effectName != NULL) free(attribute->effectName);
+        free(attribute);
+    }
+}
+
+void destroyCardAttributeList(CardAttributeList * list) {
+    if (list != NULL) {
+        destroyCardAttribute(list->attribute);
+        destroyCardAttributeList(list->next);
+        free(list);
+    }
+}
+
+void destroyActionNameList(ActionNameList * list) {
+    if (list != NULL) {
+        if (list->name != NULL) free(list->name);
+        destroyActionNameList(list->next);
+        free(list);
+    }
+}
+
 void destroyPlayerRange(PlayerRange * range) {
     if (range != NULL) {
         free(range);
@@ -74,6 +106,7 @@ void destroyPlayerRange(PlayerRange * range) {
 void destroyCard(Card * card) {
     if (card != NULL) {
         if (card->name != NULL) free(card->name);
+        destroyCardAttributeList(card->attributes);
         free(card);
     }
 }
@@ -93,6 +126,7 @@ void destroyGame(Game * game) {
         destroyCardList(game->deck);
         destroyPlayRuleList(game->playRules);
         destroyTurn(game->turn);
+        destroyActionNameList(game->declaredActions);
         destroyWinCondition(game->winCondition);
         free(game);
     }

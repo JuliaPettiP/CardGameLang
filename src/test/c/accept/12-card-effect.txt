@@ -1,0 +1,24 @@
+/* Test 12 — Card effect attribute: no-count and with-count forms
+   Expected: ACCEPT
+   Covers: CARD_ATTR_EFFECT with effectCount=0 and effectCount>0
+   Checkpoint: P1 — card attributes */
+
+game EffectCards {
+    players 2 .. 6
+    deck {
+        card SkipCard {
+            effect skip_next_player
+        }
+        card DrawCard {
+            effect draw 2
+        }
+        card WildCard {
+            effect change_color
+        }
+        card BonusCard {
+            effect extra_turn
+        }
+    }
+    hand 7
+    win if empty_hand
+}

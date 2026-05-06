@@ -1,0 +1,18 @@
+/* Test 10 — Card color attribute: list form and single form
+   Expected: ACCEPT
+   Covers: CARD_ATTR_COLOR with ColorList (multi) and single color
+   Checkpoint: P1 — card attributes */
+
+game ColorCards {
+    players 2 .. 4
+    deck {
+        card NumberCard {
+            color { red, blue, green, yellow }
+        }
+        card WildCard {
+            color black
+        }
+    }
+    hand 7
+    win if empty_hand
+}

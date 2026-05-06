@@ -25,11 +25,23 @@ Turn * TurnConditionalSemanticAction(TurnActionList * ifBlock, TurnActionList * 
 PlayRule * PlayRuleSemanticAction(PlayRulePermission permission, char * subject, PlayConditionType condition, char * conditionTarget);
 PlayRuleList * PlayRuleListSemanticAction(PlayRule * rule, PlayRuleList * next);
 
+/* Card attributes (P1) */
+ColorList * ColorListSemanticAction(char * color, ColorList * next);
+CardAttribute * CardColorListSemanticAction(ColorList * colors);
+CardAttribute * CardColorSingleSemanticAction(char * color);
+CardAttribute * CardValueSemanticAction(int min, int max);
+CardAttribute * CardPointsSemanticAction(int min, int max);
+CardAttribute * CardEffectSemanticAction(char * effectName, int count);
+CardAttributeList * CardAttributeListSemanticAction(CardAttribute * attribute, CardAttributeList * next);
+
+/* Declared actions (P2) */
+ActionNameList * ActionNameListSemanticAction(char * name, ActionNameList * next);
+
 /* Game tree nodes */
 Program * GameProgramSemanticAction(Game * game);
 PlayerRange * PlayerRangeSemanticAction(const int min, const int max);
-Card * CardSemanticAction(char * name);
+Card * CardSemanticAction(char * name, CardAttributeList * attributes);
 CardList * CardListSemanticAction(Card * card, CardList * next);
-Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, Turn * turn, WinCondition * winCondition);
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, Turn * turn, ActionNameList * declaredActions, WinCondition * winCondition);
 
 #endif

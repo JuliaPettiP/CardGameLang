@@ -1,0 +1,13 @@
+/* Reject 01 — Syntactically malformed: missing closing brace on game block
+   Expected: REJECT (parse error)
+   Covers: spec rejection case I — malformed syntax */
+
+game Malformed {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    win if empty_hand
+
+/* closing brace of game block intentionally omitted */

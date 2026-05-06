@@ -108,6 +108,85 @@ PlayRuleList * PlayRuleListSemanticAction(PlayRule * rule, PlayRuleList * next) 
 }
 
 /* ------------------------------------------------------------------ */
+/*  Card attributes (P1)                                               */
+/* ------------------------------------------------------------------ */
+
+ColorList * ColorListSemanticAction(char * color, ColorList * next) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    ColorList * node = calloc(1, sizeof(ColorList));
+    node->color = color;
+    node->next = next;
+    return node;
+}
+
+CardAttribute * CardColorListSemanticAction(ColorList * colors) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    CardAttribute * attr = calloc(1, sizeof(CardAttribute));
+    attr->type = CARD_ATTR_COLOR;
+    attr->colors = colors;
+    return attr;
+}
+
+CardAttribute * CardColorSingleSemanticAction(char * color) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    /* Wrap the single color in a one-element ColorList for uniform access */
+    ColorList * node = calloc(1, sizeof(ColorList));
+    node->color = color;
+    node->next = NULL;
+    CardAttribute * attr = calloc(1, sizeof(CardAttribute));
+    attr->type = CARD_ATTR_COLOR;
+    attr->colors = node;
+    return attr;
+}
+
+CardAttribute * CardValueSemanticAction(int min, int max) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    CardAttribute * attr = calloc(1, sizeof(CardAttribute));
+    attr->type = CARD_ATTR_VALUE;
+    attr->rangeMin = min;
+    attr->rangeMax = max;
+    return attr;
+}
+
+CardAttribute * CardPointsSemanticAction(int min, int max) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    CardAttribute * attr = calloc(1, sizeof(CardAttribute));
+    attr->type = CARD_ATTR_POINTS;
+    attr->rangeMin = min;
+    attr->rangeMax = max;
+    return attr;
+}
+
+CardAttribute * CardEffectSemanticAction(char * effectName, int count) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    CardAttribute * attr = calloc(1, sizeof(CardAttribute));
+    attr->type = CARD_ATTR_EFFECT;
+    attr->effectName = effectName;
+    attr->effectCount = count;
+    return attr;
+}
+
+CardAttributeList * CardAttributeListSemanticAction(CardAttribute * attribute, CardAttributeList * next) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    CardAttributeList * list = calloc(1, sizeof(CardAttributeList));
+    list->attribute = attribute;
+    list->next = next;
+    return list;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Declared actions (P2)                                              */
+/* ------------------------------------------------------------------ */
+
+ActionNameList * ActionNameListSemanticAction(char * name, ActionNameList * next) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    ActionNameList * node = calloc(1, sizeof(ActionNameList));
+    node->name = name;
+    node->next = next;
+    return node;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Game tree nodes                                                     */
 /* ------------------------------------------------------------------ */
 
@@ -119,10 +198,11 @@ PlayerRange * PlayerRangeSemanticAction(const int min, const int max) {
     return range;
 }
 
-Card * CardSemanticAction(char * name) {
+Card * CardSemanticAction(char * name, CardAttributeList * attributes) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Card * card = calloc(1, sizeof(Card));
     card->name = name;
+    card->attributes = attributes;   /* NULL when card body is empty */
     return card;
 }
 
@@ -134,15 +214,16 @@ CardList * CardListSemanticAction(Card * card, CardList * next) {
     return list;
 }
 
-Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, Turn * turn, WinCondition * winCondition) {
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, Turn * turn, ActionNameList * declaredActions, WinCondition * winCondition) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Game * game = calloc(1, sizeof(Game));
     game->name = name;
     game->players = players;
     game->handSize = handSize;
     game->deck = deck;
-    game->playRules = playRules;    /* may be NULL */
-    game->turn = turn;              /* may be NULL */
+    game->playRules = playRules;         /* may be NULL */
+    game->turn = turn;                   /* may be NULL */
+    game->declaredActions = declaredActions; /* may be NULL */
     game->winCondition = winCondition;
     return game;
 }

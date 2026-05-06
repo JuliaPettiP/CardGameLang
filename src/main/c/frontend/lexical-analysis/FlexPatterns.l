@@ -64,6 +64,11 @@ integer         [[:digit:]]+
 "}"             { return SymbolLexemeAction(CLOSE_BRACE); }
 ","             { return SymbolLexemeAction(COMMA); }
 
+"color"         { return KeywordLexemeAction(COLOR); }
+"value"         { return KeywordLexemeAction(VALUE); }
+"points"        { return KeywordLexemeAction(POINTS); }
+"effect"        { return KeywordLexemeAction(EFFECT); }
+
 {integer}       { return IntegerLexemeAction(); }
 {identifier}    { return IdentifierLexemeAction(); }
 

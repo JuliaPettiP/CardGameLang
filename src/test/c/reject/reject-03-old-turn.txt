@@ -1,0 +1,17 @@
+/* Reject 03 — Old turn syntax: turn { actions { ... } } no longer valid
+   Expected: REJECT (parse error — ACTIONS token not valid inside turn body)
+   Covers: regression guard against pre-correction syntax */
+
+game OldTurn {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    turn {
+        actions {
+            must play
+        }
+    }
+    win if empty_hand
+}

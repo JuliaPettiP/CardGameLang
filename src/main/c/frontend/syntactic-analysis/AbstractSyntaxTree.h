@@ -19,6 +19,10 @@ typedef struct TurnActionList TurnActionList;
 typedef struct Turn Turn;
 typedef struct PlayRule PlayRule;
 typedef struct PlayRuleList PlayRuleList;
+typedef struct ColorList ColorList;
+typedef struct CardAttribute CardAttribute;
+typedef struct CardAttributeList CardAttributeList;
+typedef struct ActionNameList ActionNameList;
 
 /* ------------------------------------------------------------------ */
 /*  Win condition                                                       */
@@ -49,11 +53,55 @@ struct PlayerRange {
 
 struct Card {
     char * name;
+    CardAttributeList * attributes;   /* may be NULL */
 };
 
 struct CardList {
     Card * card;
     struct CardList * next;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Card attributes (P1)                                               */
+/* ------------------------------------------------------------------ */
+
+/* Color list: used for both "color { red, blue }" and "color gold"   */
+struct ColorList {
+    char * color;               /* strdup'd color name                */
+    struct ColorList * next;    /* NULL for last element              */
+};
+
+typedef enum {
+    CARD_ATTR_COLOR,    /* color { red, blue } or color gold         */
+    CARD_ATTR_VALUE,    /* value 0..9 or value N                     */
+    CARD_ATTR_POINTS,   /* points 1..3 or points N                   */
+    CARD_ATTR_EFFECT    /* effect skip_next_player or effect draw 2  */
+} CardAttributeType;
+
+struct CardAttribute {
+    CardAttributeType type;
+    /* CARD_ATTR_COLOR */
+    ColorList * colors;     /* one element for single, many for list */
+    /* CARD_ATTR_VALUE and CARD_ATTR_POINTS (share same fields)      */
+    int rangeMin;
+    int rangeMax;           /* == rangeMin for a single value        */
+    /* CARD_ATTR_EFFECT */
+    char * effectName;      /* strdup'd effect identifier            */
+    int effectCount;        /* 0 when no integer argument            */
+};
+
+struct CardAttributeList {
+    CardAttribute * attribute;
+    struct CardAttributeList * next;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Declared actions (P2)                                              */
+/* ------------------------------------------------------------------ */
+
+struct ActionNameList {
+    char * name;                    /* strdup'd action name           */
+    struct ActionNameList * next;
 };
 
 /* ------------------------------------------------------------------ */
@@ -125,10 +173,11 @@ struct PlayRuleList {
 struct Game {
     char * name;
     PlayerRange * players;
-    int handSize;
     CardList * deck;
-    PlayRuleList * playRules;     /* may be NULL if section is absent */
+    int handSize;
+    PlayRuleList * playRules;
     Turn * turn;
+    ActionNameList * declaredActions;  /* may be NULL */
     WinCondition * winCondition;
 };
 
@@ -150,6 +199,10 @@ void destroyTurnActionList(TurnActionList * list);
 void destroyTurn(Turn * turn);
 void destroyPlayRule(PlayRule * rule);
 void destroyPlayRuleList(PlayRuleList * list);
+void destroyColorList(ColorList * list);
+void destroyCardAttribute(CardAttribute * attribute);
+void destroyCardAttributeList(CardAttributeList * list);
+void destroyActionNameList(ActionNameList * list);
 void destroyPlayerRange(PlayerRange * range);
 void destroyCard(Card * card);
 void destroyCardList(CardList * list);
