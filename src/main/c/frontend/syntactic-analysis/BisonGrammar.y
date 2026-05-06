@@ -218,7 +218,7 @@ turn_statement: MAY IDENTIFIER {
     $$ = TurnActionSemanticAction(TURN_ACTION_PLAIN, $1, 0);
 }
 | IDENTIFIER INTEGER {
-    $$ = TurnActionSemanticAction(TURN_ACTION_PLAIN, $1, $3);
+    $$ = TurnActionSemanticAction(TURN_ACTION_PLAIN, $1, $2);
 }
 
 /*
