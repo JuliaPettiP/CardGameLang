@@ -1,15 +1,16 @@
 /* Test 06 — play_rule with named-card conditions (allow/cannot_play X if played Y)
    Expected: ACCEPT
-   Covers: PLAY_CONDITION_PLAYED_CARD with both PLAY_RULE_ALLOW and PLAY_RULE_CANNOT_PLAY */
+   Covers: PLAY_CONDITION_PLAYED_CARD with both PLAY_RULE_ALLOW and PLAY_RULE_CANNOT_PLAY
+   Section order: players → deck → hand → play_rule → win */
 
 game TrapDuel {
     players 2
-    hand 5
     deck {
         card AttackCard { }
         card TrapCard { }
         card ShieldCard { }
     }
+    hand 5
     play_rule {
         allow AttackCard if played AttackCard
         allow TrapCard if played AttackCard

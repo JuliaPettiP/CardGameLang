@@ -61,13 +61,15 @@ struct CardList {
 /* ------------------------------------------------------------------ */
 
 typedef enum {
-    ACTION_MAY,   /* may <name> — optional action */
-    ACTION_MUST   /* must <name> — mandatory action */
+    TURN_ACTION_PLAIN,  /* plain statement inside if/else block: draw 1   */
+    TURN_ACTION_MAY,    /* optional action at top level: may play 1        */
+    TURN_ACTION_MUST    /* mandatory action at top level: must play 1      */
 } TurnActionType;
 
 struct TurnAction {
-    TurnActionType type;  /* MAY or MUST */
-    char * name;          /* action identifier, e.g. "play", "draw" */
+    TurnActionType type;
+    char * name;   /* action identifier, e.g. "play", "draw"              */
+    int count;     /* optional integer argument; 0 when not specified      */
 };
 
 struct TurnActionList {
@@ -75,8 +77,16 @@ struct TurnActionList {
     struct TurnActionList * next;
 };
 
+typedef enum {
+    TURN_SIMPLE,       /* turn { must play 1 / may draw 1 / … }           */
+    TURN_CONDITIONAL   /* turn { if cannot_play { … } else { … } }        */
+} TurnType;
+
 struct Turn {
-    TurnActionList * actions;
+    TurnType type;
+    TurnActionList * statements;  /* TURN_SIMPLE: the statement list       */
+    TurnActionList * ifBlock;     /* TURN_CONDITIONAL: if-cannot_play body */
+    TurnActionList * elseBlock;   /* TURN_CONDITIONAL: else body           */
 };
 
 /* ------------------------------------------------------------------ */

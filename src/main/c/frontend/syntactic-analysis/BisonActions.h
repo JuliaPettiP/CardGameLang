@@ -15,10 +15,11 @@ ModuleDestructor initializeBisonActionsModule(CompilerState * compilerState);
 WinCondition * WinEmptyHandSemanticAction();
 WinCondition * WinPointsSemanticAction(int points);
 
-/* Turn / Actions */
-TurnAction * TurnActionSemanticAction(TurnActionType type, char * name);
+/* Turn */
+TurnAction * TurnActionSemanticAction(TurnActionType type, char * name, int count);
 TurnActionList * TurnActionListSemanticAction(TurnAction * action, TurnActionList * next);
-Turn * TurnSemanticAction(TurnActionList * actions);
+Turn * TurnSimpleSemanticAction(TurnActionList * statements);
+Turn * TurnConditionalSemanticAction(TurnActionList * ifBlock, TurnActionList * elseBlock);
 
 /* Play rules */
 PlayRule * PlayRuleSemanticAction(PlayRulePermission permission, char * subject, PlayConditionType condition, char * conditionTarget);

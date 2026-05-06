@@ -60,9 +60,9 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <card_list> deck_section card_list
 %type <card> card_definition
 %type <win_condition> win_section
-%type <turn> turn_section
-%type <turn_action> action_item
-%type <turn_action_list> action_list
+%type <turn> turn_section turn_body
+%type <turn_action> turn_statement
+%type <turn_action_list> turn_statement_list
 %type <play_rule_list> play_rule_section play_rule_list
 %type <play_rule> play_rule_item
 
@@ -72,8 +72,9 @@ program: card_game {
     $$ = GameProgramSemanticAction($1);
 }
 
-card_game: GAME IDENTIFIER OPEN_BRACE players_section hand_section deck_section play_rule_section turn_section win_section CLOSE_BRACE {
-    $$ = GameSemanticAction($2, $4, $5, $6, $7, $8, $9);
+card_game: GAME IDENTIFIER OPEN_BRACE players_section deck_section hand_section play_rule_section turn_section win_section CLOSE_BRACE {
+    /* $2=name  $4=players  $5=deck  $6=handSize  $7=playRules  $8=turn  $9=win */
+    $$ = GameSemanticAction($2, $4, $6, $5, $7, $8, $9);
 }
 
 players_section: PLAYERS INTEGER RANGE INTEGER {
@@ -155,36 +156,69 @@ play_rule_item: ALLOW IF SAME_COLOR {
 
 /*
  * turn_section
- *   turn { actions { <action_list> } }
+ *   turn { turn_body }
  *   (absent) → NULL
  */
-turn_section: TURN OPEN_BRACE ACTIONS OPEN_BRACE action_list CLOSE_BRACE CLOSE_BRACE {
-    $$ = TurnSemanticAction($5);
+turn_section: TURN OPEN_BRACE turn_body CLOSE_BRACE {
+    $$ = $3;
 }
 | /* empty */ {
     $$ = NULL;
 }
 
 /*
- * action_list — one or more action_item entries (left-recursive to avoid stack growth)
+ * turn_body — two forms from the spec:
+ *
+ *   Simple:      must play 1 / may draw 1 / …
+ *   Conditional: if cannot_play { … } else { … }
  */
-action_list: action_item {
+turn_body: turn_statement_list {
+    $$ = TurnSimpleSemanticAction($1);
+}
+| IF CANNOT_PLAY OPEN_BRACE turn_statement_list CLOSE_BRACE ELSE OPEN_BRACE turn_statement_list CLOSE_BRACE {
+    $$ = TurnConditionalSemanticAction($4, $8);
+}
+
+/*
+ * turn_statement_list — one or more turn_statement entries
+ */
+turn_statement_list: turn_statement {
     $$ = TurnActionListSemanticAction($1, NULL);
 }
-| action_item action_list {
+| turn_statement turn_statement_list {
     $$ = TurnActionListSemanticAction($1, $2);
 }
 
 /*
- * action_item
- *   may  IDENTIFIER   → ACTION_MAY
- *   must IDENTIFIER   → ACTION_MUST
+ * turn_statement — six forms:
+ *
+ *   may  IDENTIFIER            ACTION_MAY,   count=0
+ *   may  IDENTIFIER INTEGER    ACTION_MAY,   count=N
+ *   must IDENTIFIER            ACTION_MUST,  count=0
+ *   must IDENTIFIER INTEGER    ACTION_MUST,  count=N
+ *   IDENTIFIER                 ACTION_PLAIN, count=0  (inside if/else blocks)
+ *   IDENTIFIER INTEGER         ACTION_PLAIN, count=N  (inside if/else blocks)
+ *
+ * Bison shifts on INTEGER when it is the next lookahead, so the optional-integer
+ * forms are unambiguous (default shift preference resolves any SR conflict).
  */
-action_item: MAY IDENTIFIER {
-    $$ = TurnActionSemanticAction(ACTION_MAY, $2);
+turn_statement: MAY IDENTIFIER {
+    $$ = TurnActionSemanticAction(TURN_ACTION_MAY, $2, 0);
+}
+| MAY IDENTIFIER INTEGER {
+    $$ = TurnActionSemanticAction(TURN_ACTION_MAY, $2, $3);
 }
 | MUST IDENTIFIER {
-    $$ = TurnActionSemanticAction(ACTION_MUST, $2);
+    $$ = TurnActionSemanticAction(TURN_ACTION_MUST, $2, 0);
+}
+| MUST IDENTIFIER INTEGER {
+    $$ = TurnActionSemanticAction(TURN_ACTION_MUST, $2, $3);
+}
+| IDENTIFIER {
+    $$ = TurnActionSemanticAction(TURN_ACTION_PLAIN, $1, 0);
+}
+| IDENTIFIER INTEGER {
+    $$ = TurnActionSemanticAction(TURN_ACTION_PLAIN, $1, $3);
 }
 
 /*

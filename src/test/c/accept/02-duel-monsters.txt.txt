@@ -1,9 +1,9 @@
 game TestTurn {
     players 2
-    hand 5
     deck {
         card Ace { }
     }
+    hand 5
     turn {
         actions {
             must play

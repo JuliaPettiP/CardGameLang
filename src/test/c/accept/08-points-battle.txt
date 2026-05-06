@@ -1,24 +1,23 @@
 /* Test 08 — full game combining reach_points win, mixed turn actions, and named-card play rules
    Expected: ACCEPT
-   Covers: WIN_REACH_POINTS + ACTION_MUST + ACTION_MAY + PLAY_CONDITION_PLAYED_CARD */
+   Covers: WIN_REACH_POINTS + TURN_ACTION_MUST + TURN_ACTION_MAY + PLAY_CONDITION_PLAYED_CARD
+   Section order: players → deck → hand → play_rule → turn → win */
 
 game PointsBattle {
     players 2 .. 6
-    hand 5
     deck {
         card Ace { }
         card King { }
         card Joker { }
     }
+    hand 5
     play_rule {
         allow if any_card
         cannot_play Joker if played Joker
     }
     turn {
-        actions {
-            must play
-            may draw
-        }
+        must play 1
+        may draw 1
     }
     win if reach_points 100
 }

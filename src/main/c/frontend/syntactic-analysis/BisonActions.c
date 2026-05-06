@@ -46,11 +46,12 @@ WinCondition * WinPointsSemanticAction(int points) {
 /*  Turn / Actions                                                      */
 /* ------------------------------------------------------------------ */
 
-TurnAction * TurnActionSemanticAction(TurnActionType type, char * name) {
+TurnAction * TurnActionSemanticAction(TurnActionType type, char * name, int count) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     TurnAction * action = calloc(1, sizeof(TurnAction));
     action->type = type;
-    action->name = name;  /* ownership of the strdup'd string transfers here */
+    action->name = name;   /* ownership of the strdup'd string transfers here */
+    action->count = count; /* 0 when no integer was written                   */
     return action;
 }
 
@@ -62,10 +63,25 @@ TurnActionList * TurnActionListSemanticAction(TurnAction * action, TurnActionLis
     return list;
 }
 
-Turn * TurnSemanticAction(TurnActionList * actions) {
+/* turn { must play 1   may draw 1   … } */
+Turn * TurnSimpleSemanticAction(TurnActionList * statements) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Turn * turn = calloc(1, sizeof(Turn));
-    turn->actions = actions;
+    turn->type = TURN_SIMPLE;
+    turn->statements = statements;
+    turn->ifBlock = NULL;
+    turn->elseBlock = NULL;
+    return turn;
+}
+
+/* turn { if cannot_play { … } else { … } } */
+Turn * TurnConditionalSemanticAction(TurnActionList * ifBlock, TurnActionList * elseBlock) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Turn * turn = calloc(1, sizeof(Turn));
+    turn->type = TURN_CONDITIONAL;
+    turn->statements = NULL;
+    turn->ifBlock = ifBlock;
+    turn->elseBlock = elseBlock;
     return turn;
 }
 

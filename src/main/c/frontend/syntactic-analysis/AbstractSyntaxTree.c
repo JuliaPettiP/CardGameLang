@@ -41,7 +41,10 @@ void destroyTurnActionList(TurnActionList * list) {
 
 void destroyTurn(Turn * turn) {
     if (turn != NULL) {
-        destroyTurnActionList(turn->actions);
+        /* All three list pointers are always freed — unused ones are NULL */
+        destroyTurnActionList(turn->statements);
+        destroyTurnActionList(turn->ifBlock);
+        destroyTurnActionList(turn->elseBlock);
         free(turn);
     }
 }
