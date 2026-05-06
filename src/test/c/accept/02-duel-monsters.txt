@@ -5,10 +5,8 @@ game TestTurn {
     }
     hand 5
     turn {
-        actions {
-            must play
-            may draw
-        }
+        must play
+        may draw
     }
     win if empty_hand
 }
