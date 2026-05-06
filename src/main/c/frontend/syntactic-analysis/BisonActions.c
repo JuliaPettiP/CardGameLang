@@ -23,6 +23,42 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Game rules (P3)                                                    */
+/* ------------------------------------------------------------------ */
+
+RuleStatement * RuleStatementSemanticAction(char * action, int count) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    RuleStatement * stmt = calloc(1, sizeof(RuleStatement));
+    stmt->action = action;
+    stmt->count = count;
+    return stmt;
+}
+
+RuleStatementList * RuleStatementListSemanticAction(RuleStatement * statement, RuleStatementList * next) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    RuleStatementList * list = calloc(1, sizeof(RuleStatementList));
+    list->statement = statement;
+    list->next = next;
+    return list;
+}
+
+GameRule * GameRuleSemanticAction(char * triggerCard, RuleStatementList * body) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    GameRule * rule = calloc(1, sizeof(GameRule));
+    rule->triggerCard = triggerCard;
+    rule->body = body;
+    return rule;
+}
+
+GameRuleList * GameRuleListSemanticAction(GameRule * rule, GameRuleList * next) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    GameRuleList * list = calloc(1, sizeof(GameRuleList));
+    list->rule = rule;
+    list->next = next;
+    return list;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Win condition                                                       */
 /* ------------------------------------------------------------------ */
 
@@ -214,16 +250,17 @@ CardList * CardListSemanticAction(Card * card, CardList * next) {
     return list;
 }
 
-Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, Turn * turn, ActionNameList * declaredActions, WinCondition * winCondition) {
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, GameRuleList * rules, Turn * turn, ActionNameList * declaredActions, WinCondition * winCondition) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Game * game = calloc(1, sizeof(Game));
     game->name = name;
     game->players = players;
     game->handSize = handSize;
     game->deck = deck;
-    game->playRules = playRules;         /* may be NULL */
+    game->playRules = playRules;
+    game->rules = rules;                 /* may be NULL */
     game->turn = turn;                   /* may be NULL */
-    game->declaredActions = declaredActions; /* may be NULL */
+    game->declaredActions = declaredActions;
     game->winCondition = winCondition;
     return game;
 }

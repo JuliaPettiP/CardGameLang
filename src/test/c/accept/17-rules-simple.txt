@@ -1,0 +1,26 @@
+/* Test 17 — rules section: if played X { action }
+   Expected: ACCEPT
+   Covers: rules_section, game_rule_list, game_rule, rule_statement (no count)
+   Checkpoint: P3 — rules section */
+
+game SimpleRules {
+    players 2 .. 4
+    deck {
+        card SkipCard { }
+        card WildCard { }
+    }
+    hand 7
+    rules {
+        if played SkipCard {
+            skip_next_player
+        }
+        if played WildCard {
+            choose_color
+        }
+    }
+    actions {
+        skip_next_player
+        choose_color
+    }
+    win if empty_hand
+}

@@ -23,6 +23,10 @@ typedef struct ColorList ColorList;
 typedef struct CardAttribute CardAttribute;
 typedef struct CardAttributeList CardAttributeList;
 typedef struct ActionNameList ActionNameList;
+typedef struct RuleStatement RuleStatement;
+typedef struct RuleStatementList RuleStatementList;
+typedef struct GameRule GameRule;
+typedef struct GameRuleList GameRuleList;
 
 /* ------------------------------------------------------------------ */
 /*  Win condition                                                       */
@@ -105,6 +109,41 @@ struct ActionNameList {
 };
 
 /* ------------------------------------------------------------------ */
+/*  Game rules (P3)                                                    */
+/* ------------------------------------------------------------------ */
+
+/*
+ * A single statement inside a rule body.
+ *   action      — the action / target identifier (e.g. "skip_next_player")
+ *   count       — optional integer argument; 0 when absent
+ *
+ * Note: "next_player draw 2" is stored as two consecutive RuleStatements:
+ *   RuleStatement("next_player", 0) + RuleStatement("draw", 2)
+ */
+struct RuleStatement {
+    char * action;
+    int count;
+};
+
+struct RuleStatementList {
+    RuleStatement * statement;
+    struct RuleStatementList * next;
+};
+
+/*
+ * A single conditional rule:  if played <CardName> { <body> }
+ */
+struct GameRule {
+    char * triggerCard;          /* strdup'd card name                 */
+    RuleStatementList * body;
+};
+
+struct GameRuleList {
+    GameRule * rule;
+    struct GameRuleList * next;
+};
+
+/* ------------------------------------------------------------------ */
 /*  Turn / Actions                                                      */
 /* ------------------------------------------------------------------ */
 
@@ -176,8 +215,9 @@ struct Game {
     CardList * deck;
     int handSize;
     PlayRuleList * playRules;
+    GameRuleList * rules;          /* may be NULL */
     Turn * turn;
-    ActionNameList * declaredActions;  /* may be NULL */
+    ActionNameList * declaredActions;
     WinCondition * winCondition;
 };
 
@@ -203,6 +243,10 @@ void destroyColorList(ColorList * list);
 void destroyCardAttribute(CardAttribute * attribute);
 void destroyCardAttributeList(CardAttributeList * list);
 void destroyActionNameList(ActionNameList * list);
+void destroyRuleStatement(RuleStatement * statement);
+void destroyRuleStatementList(RuleStatementList * list);
+void destroyGameRule(GameRule * rule);
+void destroyGameRuleList(GameRuleList * list);
 void destroyPlayerRange(PlayerRange * range);
 void destroyCard(Card * card);
 void destroyCardList(CardList * list);

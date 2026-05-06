@@ -25,6 +25,12 @@ Turn * TurnConditionalSemanticAction(TurnActionList * ifBlock, TurnActionList * 
 PlayRule * PlayRuleSemanticAction(PlayRulePermission permission, char * subject, PlayConditionType condition, char * conditionTarget);
 PlayRuleList * PlayRuleListSemanticAction(PlayRule * rule, PlayRuleList * next);
 
+/* Game rules (P3) */
+RuleStatement * RuleStatementSemanticAction(char * action, int count);
+RuleStatementList * RuleStatementListSemanticAction(RuleStatement * statement, RuleStatementList * next);
+GameRule * GameRuleSemanticAction(char * triggerCard, RuleStatementList * body);
+GameRuleList * GameRuleListSemanticAction(GameRule * rule, GameRuleList * next);
+
 /* Card attributes (P1) */
 ColorList * ColorListSemanticAction(char * color, ColorList * next);
 CardAttribute * CardColorListSemanticAction(ColorList * colors);
@@ -42,6 +48,6 @@ Program * GameProgramSemanticAction(Game * game);
 PlayerRange * PlayerRangeSemanticAction(const int min, const int max);
 Card * CardSemanticAction(char * name, CardAttributeList * attributes);
 CardList * CardListSemanticAction(Card * card, CardList * next);
-Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, Turn * turn, ActionNameList * declaredActions, WinCondition * winCondition);
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, GameRuleList * rules, Turn * turn, ActionNameList * declaredActions, WinCondition * winCondition);
 
 #endif

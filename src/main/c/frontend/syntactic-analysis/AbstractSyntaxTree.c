@@ -97,6 +97,37 @@ void destroyActionNameList(ActionNameList * list) {
     }
 }
 
+void destroyRuleStatement(RuleStatement * statement) {
+    if (statement != NULL) {
+        if (statement->action != NULL) free(statement->action);
+        free(statement);
+    }
+}
+
+void destroyRuleStatementList(RuleStatementList * list) {
+    if (list != NULL) {
+        destroyRuleStatement(list->statement);
+        destroyRuleStatementList(list->next);
+        free(list);
+    }
+}
+
+void destroyGameRule(GameRule * rule) {
+    if (rule != NULL) {
+        if (rule->triggerCard != NULL) free(rule->triggerCard);
+        destroyRuleStatementList(rule->body);
+        free(rule);
+    }
+}
+
+void destroyGameRuleList(GameRuleList * list) {
+    if (list != NULL) {
+        destroyGameRule(list->rule);
+        destroyGameRuleList(list->next);
+        free(list);
+    }
+}
+
 void destroyPlayerRange(PlayerRange * range) {
     if (range != NULL) {
         free(range);
@@ -125,6 +156,7 @@ void destroyGame(Game * game) {
         destroyPlayerRange(game->players);
         destroyCardList(game->deck);
         destroyPlayRuleList(game->playRules);
+        destroyGameRuleList(game->rules);
         destroyTurn(game->turn);
         destroyActionNameList(game->declaredActions);
         destroyWinCondition(game->winCondition);

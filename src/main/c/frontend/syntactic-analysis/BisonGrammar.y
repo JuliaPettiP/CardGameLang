@@ -34,6 +34,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
     CardAttribute * card_attribute;
     CardAttributeList * card_attribute_list;
     ActionNameList * action_name_list;
+    RuleStatement * rule_statement;
+    RuleStatementList * rule_statement_list;
+    GameRule * game_rule;
+    GameRuleList * game_rule_list;
 }
 
 %destructor { destroyGame($$); } <game>
@@ -50,6 +54,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %destructor { destroyCardAttribute($$); } <card_attribute>
 %destructor { destroyCardAttributeList($$); } <card_attribute_list>
 %destructor { destroyActionNameList($$); } <action_name_list>
+%destructor { destroyRuleStatement($$); } <rule_statement>
+%destructor { destroyRuleStatementList($$); } <rule_statement_list>
+%destructor { destroyGameRule($$); } <game_rule>
+%destructor { destroyGameRuleList($$); } <game_rule_list>
 %destructor { free($$); } <string>
 
 /** Terminals */
@@ -72,6 +80,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <card_attribute> card_attribute
 %type <color_list> color_list
 %type <action_name_list> actions_section action_name_list
+%type <game_rule_list> rules_section game_rule_list
+%type <game_rule> game_rule
+%type <rule_statement_list> rule_statement_list
+%type <rule_statement> rule_statement
 %type <win_condition> win_section
 %type <turn> turn_section turn_body
 %type <turn_action> turn_statement
@@ -85,9 +97,9 @@ program: card_game {
     $$ = GameProgramSemanticAction($1);
 }
 
-card_game: GAME IDENTIFIER OPEN_BRACE players_section deck_section hand_section play_rule_section turn_section actions_section win_section CLOSE_BRACE {
-    /* $2=name  $4=players  $5=deck  $6=handSize  $7=playRules  $8=turn  $9=actions  $10=win */
-    $$ = GameSemanticAction($2, $4, $6, $5, $7, $8, $9, $10);
+card_game: GAME IDENTIFIER OPEN_BRACE players_section deck_section hand_section play_rule_section rules_section turn_section actions_section win_section CLOSE_BRACE {
+    /* $2=name $4=players $5=deck $6=handSize $7=playRules $8=rules $9=turn $10=actions $11=win */
+    $$ = GameSemanticAction($2, $4, $6, $5, $7, $8, $9, $10, $11);
 }
 
 players_section: PLAYERS INTEGER RANGE INTEGER {
@@ -199,6 +211,64 @@ action_name_list: IDENTIFIER {
 }
 | IDENTIFIER action_name_list {
     $$ = ActionNameListSemanticAction($1, $2);
+}
+
+/*
+ * rules_section — conditional game rules triggered by playing a card (P3)
+ *   rules { if played CardName { statement+ } … }
+ *   (absent) → NULL
+ */
+rules_section: RULES OPEN_BRACE game_rule_list CLOSE_BRACE {
+    $$ = $3;
+}
+| /* empty */ {
+    $$ = NULL;
+}
+
+/*
+ * game_rule_list — one or more game_rule entries
+ */
+game_rule_list: game_rule {
+    $$ = GameRuleListSemanticAction($1, NULL);
+}
+| game_rule game_rule_list {
+    $$ = GameRuleListSemanticAction($1, $2);
+}
+
+/*
+ * game_rule — a single conditional rule
+ *   if played <CardName> { <rule_statement_list> }
+ */
+game_rule: IF PLAYED IDENTIFIER OPEN_BRACE rule_statement_list CLOSE_BRACE {
+    /* $1=IF $2=PLAYED $3=IDENTIFIER(card) $4={ $5=list $6=} */
+    $$ = GameRuleSemanticAction($3, $5);
+}
+
+/*
+ * rule_statement_list — one or more rule statements
+ * SR note: after a rule_statement, if lookahead is IDENTIFIER Bison shifts
+ * (starts next statement). If CLOSE_BRACE, reduces. Correct by default.
+ */
+rule_statement_list: rule_statement {
+    $$ = RuleStatementListSemanticAction($1, NULL);
+}
+| rule_statement rule_statement_list {
+    $$ = RuleStatementListSemanticAction($1, $2);
+}
+
+/*
+ * rule_statement — two forms:
+ *   IDENTIFIER           action with no count  (skip_next_player, choose_color)
+ *   IDENTIFIER INTEGER   action with count     (draw 2)
+ *
+ * Note: "next_player draw 2" is stored as two statements:
+ *   RuleStatement("next_player",0) + RuleStatement("draw",2)
+ */
+rule_statement: IDENTIFIER {
+    $$ = RuleStatementSemanticAction($1, 0);
+}
+| IDENTIFIER INTEGER {
+    $$ = RuleStatementSemanticAction($1, $2);
 }
 
 /*
