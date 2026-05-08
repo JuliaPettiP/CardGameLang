@@ -6,9 +6,15 @@
 game HighPoints {
     players 2
     deck {
-        card LowCard { }
-        card HighCard { }
-        card BonusCard { }
+        card LowCard { 
+            points 1 .. 3
+        }
+        card HighCard {
+            points 4 .. 7
+         }
+        card BonusCard {
+            points 5
+         }
     }
     hand 5
     play_rule {

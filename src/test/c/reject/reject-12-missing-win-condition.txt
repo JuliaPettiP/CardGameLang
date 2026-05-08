@@ -1,0 +1,11 @@
+/* Reject 12 — Missing win condition section
+   Expected: REJECT (Stage II: ACCEPT because semantic validation is not implemented yet)
+   Covers: spec rejection case VII — game without win condition */
+
+game MissingWin {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+}

@@ -1,0 +1,14 @@
+/* Reject 11 — Card uses an unsupported attribute
+   Expected: REJECT
+   Covers: spec rejection case IV — unsupported card attribute */
+
+game BadAttribute {
+    players 2
+    deck {
+        card Ace {
+            speed 10
+        }
+    }
+    hand 5
+    win if empty_hand
+}

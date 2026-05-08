@@ -1,0 +1,12 @@
+/* Reject 06 — Invalid players range: min > max
+   Expected: REJECT (Stage II: ACCEPT because semantic validation is not implemented yet)
+   Covers: spec rejection case I and II (semantic validation — players min <= max) */
+
+game InvalidPlayers {
+    players 5 .. 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    win if empty_hand
+}

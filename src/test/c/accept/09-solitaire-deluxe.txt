@@ -21,7 +21,7 @@ game SolitaireDeluxe {
             draw 1
         }
         else {
-            must play 1
+            play 1
         }
     }
     win if empty_hand

@@ -1,0 +1,20 @@
+/* Reject 09 — Rule references a card that does not exist in the deck
+   Expected: REJECT (Stage II: ACCEPT because semantic validation is not implemented yet)
+   Covers: spec rejection case VIII (semantic validation — cards referenced in rules must exist) */
+
+game UndefinedRuleCard {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    rules {
+        if played Joker {
+            play
+        }
+    }
+    actions {
+        play
+    }
+    win if empty_hand
+}

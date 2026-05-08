@@ -21,5 +21,9 @@ game FullUno {
         may play 1
         may draw 1
     }
+    actions {
+        play
+        draw
+    }
     win if empty_hand
 }

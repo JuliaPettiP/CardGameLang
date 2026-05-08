@@ -393,16 +393,14 @@ turn_statement: MAY IDENTIFIER {
  * win_section
  *   win if empty_hand         → WinCondition { WIN_EMPTY_HAND, 0 }
  *   win if reach_points <N>   → WinCondition { WIN_REACH_POINTS, N }
- *   (absent)                  → NULL  (game has no explicit win condition)
  */
-win_section: WIN IF EMPTY_HAND {
-    $$ = WinEmptyHandSemanticAction();
-}
-| WIN IF REACH_POINTS INTEGER {
-    $$ = WinPointsSemanticAction($4);
-}
-| /* empty */ {
-    $$ = NULL;
-}
+win_section:
+    WIN IF EMPTY_HAND {
+        $$ = WinEmptyHandSemanticAction();
+    }
+    | WIN IF REACH_POINTS INTEGER {
+        $$ = WinPointsSemanticAction($4);
+    }
+;
 
 %%

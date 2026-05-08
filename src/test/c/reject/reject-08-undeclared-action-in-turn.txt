@@ -1,0 +1,18 @@
+/* Reject 08 — Turn uses an action not declared in actions section
+   Expected: REJECT (Stage II: ACCEPT because semantic validation is not implemented yet)
+   Covers: spec rejection case VI (semantic validation — actions used in turn must be declared) */
+
+game UndeclaredTurnAction {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    turn {
+        must draw 1
+    }
+    actions {
+        play
+    }
+    win if empty_hand
+}
