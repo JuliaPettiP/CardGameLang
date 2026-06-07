@@ -1,0 +1,16 @@
+/* Reject 16 — Duplicate action name inside actions section
+   Expected: REJECT
+   Covers: semantic validation — declared action names must be unique */
+
+game DuplicateActions {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    actions {
+        play
+        play
+    }
+    win if empty_hand
+}

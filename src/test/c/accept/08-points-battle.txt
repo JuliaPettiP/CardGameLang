@@ -19,5 +19,9 @@ game PointsBattle {
         must play 1
         may draw 1
     }
+    actions {
+        play
+        draw
+    }
     win if reach_points 100
 }

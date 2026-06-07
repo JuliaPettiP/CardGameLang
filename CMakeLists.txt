@@ -43,6 +43,8 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
 		src/main/c/support/configuration/Environment.c
 		src/main/c/support/language/String.c
 		src/main/c/support/logging/Logger.c
+		src/main/c/backend/domain-specific/SemanticValidator.c
+		#src/main/c/backend/code-generation/Generator.c
 		# Add more *.c files if needed (otherwise, they won't be compiled).
 		# ...
 	)

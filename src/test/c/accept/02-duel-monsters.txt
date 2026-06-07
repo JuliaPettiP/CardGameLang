@@ -8,5 +8,9 @@ game TestTurn {
         must play
         may draw
     }
+    actions {
+        play
+        draw
+    }
     win if empty_hand
 }

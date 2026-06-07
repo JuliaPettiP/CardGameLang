@@ -1,0 +1,12 @@
+/* Reject 17 — Invalid reach_points target
+   Expected: REJECT
+   Covers: semantic validation — reach_points target must be greater than zero */
+
+game InvalidReachPoints {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    win if reach_points 0
+}

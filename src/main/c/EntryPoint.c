@@ -6,6 +6,8 @@
 #include "support/type/CompilerState.h"
 #include "support/type/ModuleDestructor.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
+#include "backend/domain-specific/SemanticValidator.h"
+#include "backend/code-generation/Generator.h"
 
 /**
  * The main entry-point of the entire application. If you use "strtok" to
@@ -31,7 +33,11 @@ const int main(const int length, const char ** arguments) {
 	CompilationStatus compilationStatus = executeSyntacticAnalysis();
 	Program * program = compilerState.abstractSyntaxtTree;
 	if (compilationStatus == SUCCEEDED) {
+		compilationStatus = validateSemantics(program);
 
+		if (compilationStatus == FAILED) {
+			logError(logger, "The semantic-analysis phase rejects the input program.");
+		}
 	}
 	else {
 		logError(logger, "The syntactic-analysis phase rejects the input program.");

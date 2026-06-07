@@ -24,5 +24,9 @@ game SolitaireDeluxe {
             play 1
         }
     }
+    actions {
+        draw
+        play
+    }
     win if empty_hand
 }
