@@ -10,6 +10,7 @@ ModuleDestructor initializeAbstractSyntaxTreeModule();
 
 typedef struct Program Program;
 typedef struct Game Game;
+typedef struct GameList GameList;
 typedef struct PlayerRange PlayerRange;
 typedef struct Card Card;
 typedef struct CardList CardList;
@@ -225,8 +226,14 @@ struct Game {
 /*  Program (root)                                                      */
 /* ------------------------------------------------------------------ */
 
-struct Program {
+/* A program may define one or more games. */
+struct GameList {
     Game * game;
+    struct GameList * next;
+};
+
+struct Program {
+    GameList * games;
 };
 
 /* ------------------------------------------------------------------ */
@@ -251,6 +258,7 @@ void destroyPlayerRange(PlayerRange * range);
 void destroyCard(Card * card);
 void destroyCardList(CardList * list);
 void destroyGame(Game * game);
+void destroyGameList(GameList * list);
 void destroyProgram(Program * program);
 
 #endif

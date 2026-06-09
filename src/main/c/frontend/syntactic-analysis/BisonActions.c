@@ -265,10 +265,18 @@ Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize
     return game;
 }
 
-Program * GameProgramSemanticAction(Game * game) {
+GameList * GameListSemanticAction(Game * game, GameList * next) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    GameList * list = calloc(1, sizeof(GameList));
+    list->game = game;
+    list->next = next;
+    return list;
+}
+
+Program * GameProgramSemanticAction(GameList * games) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Program * program = calloc(1, sizeof(Program));
-    program->game = game;
+    program->games = games;
     _compilerState->abstractSyntaxtTree = program;
     return program;
 }

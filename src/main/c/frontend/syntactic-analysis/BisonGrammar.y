@@ -21,6 +21,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
     Program * program;
     Game * game;
+    GameList * game_list;
     PlayerRange * player_range;
     Card * card;
     CardList * card_list;
@@ -41,6 +42,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 }
 
 %destructor { destroyGame($$); } <game>
+%destructor { destroyGameList($$); } <game_list>
 %destructor { destroyPlayerRange($$); } <player_range>
 %destructor { destroyCard($$); } <card>
 %destructor { destroyCardList($$); } <card_list>
@@ -71,6 +73,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 /** Non-terminals */
 %type <program> program
+%type <game_list> card_game_list
 %type <game> card_game
 %type <player_range> players_section
 %type <integer> hand_section
@@ -93,8 +96,16 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 %%
 
-program: card_game {
+program: card_game_list {
     $$ = GameProgramSemanticAction($1);
+}
+
+/* One or more game definitions in a single program. */
+card_game_list: card_game {
+    $$ = GameListSemanticAction($1, NULL);
+}
+| card_game card_game_list {
+    $$ = GameListSemanticAction($1, $2);
 }
 
 card_game: GAME IDENTIFIER OPEN_BRACE players_section deck_section hand_section play_rule_section rules_section turn_section actions_section win_section CLOSE_BRACE {

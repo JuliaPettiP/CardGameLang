@@ -164,9 +164,17 @@ void destroyGame(Game * game) {
     }
 }
 
+void destroyGameList(GameList * list) {
+    if (list != NULL) {
+        destroyGame(list->game);
+        destroyGameList(list->next);
+        free(list);
+    }
+}
+
 void destroyProgram(Program * program) {
     if (program != NULL) {
-        destroyGame(program->game);
+        destroyGameList(program->games);
         free(program);
     }
 }

@@ -43,6 +43,9 @@ const int main(const int length, const char ** arguments) {
 		logError(logger, "The syntactic-analysis phase rejects the input program.");
 		compilationStatus = FAILED;
 	}
+	if (compilationStatus == SUCCEEDED) {
+		generateGameSummary(program);
+	}
 	logDebugging(logger, "Releasing AST resources...");
 	destroyProgram(program);
 	for (int k = (sizeof(moduleDestructors)/sizeof(ModuleDestructor)) - 1; 0 <= k; --k) {

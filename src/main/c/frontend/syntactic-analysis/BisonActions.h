@@ -44,7 +44,8 @@ CardAttributeList * CardAttributeListSemanticAction(CardAttribute * attribute, C
 ActionNameList * ActionNameListSemanticAction(char * name, ActionNameList * next);
 
 /* Game tree nodes */
-Program * GameProgramSemanticAction(Game * game);
+GameList * GameListSemanticAction(Game * game, GameList * next);
+Program * GameProgramSemanticAction(GameList * games);
 PlayerRange * PlayerRangeSemanticAction(const int min, const int max);
 Card * CardSemanticAction(char * name, CardAttributeList * attributes);
 CardList * CardListSemanticAction(Card * card, CardList * next);

@@ -208,19 +208,7 @@ static CompilationStatus validateHandSize(Game * game) {
 	return SUCCEEDED;
 }
 
-CompilationStatus validateSemantics(Program * program) {
-	_logger = createLogger("SemanticValidator");
-
-	if (program == NULL || program->game == NULL) {
-		logError(_logger, "Missing program.");
-		destroyLogger(_logger);
-		return FAILED;
-	}
-
-	Game * game = program->game;
-
-	CompilationStatus status = SUCCEEDED;
-
+static CompilationStatus validateGame(Game * game) {
 	if (validatePlayers(game) == FAILED ||
 		validateDeck(game) == FAILED ||
 		validateActions(game) == FAILED ||
@@ -229,7 +217,28 @@ CompilationStatus validateSemantics(Program * program) {
 		validatePlayRules(game) == FAILED ||
 		validateRules(game) == FAILED ||
 		validateTurn(game) == FAILED) {
-		status = FAILED;
+		return FAILED;
+	}
+
+	return SUCCEEDED;
+}
+
+CompilationStatus validateSemantics(Program * program) {
+	_logger = createLogger("SemanticValidator");
+
+	if (program == NULL || program->games == NULL) {
+		logError(_logger, "Missing program.");
+		destroyLogger(_logger);
+		return FAILED;
+	}
+
+	CompilationStatus status = SUCCEEDED;
+
+	for (GameList * games = program->games; games != NULL; games = games->next) {
+		if (validateGame(games->game) == FAILED) {
+			status = FAILED;
+			break;
+		}
 	}
 
 	destroyLogger(_logger);
