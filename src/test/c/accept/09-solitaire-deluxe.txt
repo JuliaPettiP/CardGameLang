@@ -1,0 +1,32 @@
+/* Test 09 — single player game with all sections (regression: players 1)
+   Expected: ACCEPT
+   Covers: players single value + play_rule + turn (conditional) + win
+   Section order: players → deck → hand → play_rule → turn → win */
+
+game SolitaireDeluxe {
+    players 1
+    deck {
+        card AceOfSpades { }
+        card KingOfHearts { }
+        card QueenOfDiamonds { }
+        card JackOfClubs { }
+    }
+    hand 13
+    play_rule {
+        allow if same_color
+        allow if same_value
+    }
+    turn {
+        if cannot_play {
+            draw 1
+        }
+        else {
+            play 1
+        }
+    }
+    actions {
+        draw
+        play
+    }
+    win if empty_hand
+}

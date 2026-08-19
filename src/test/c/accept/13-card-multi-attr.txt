@@ -1,0 +1,30 @@
+/* Test 13 — Card with multiple attributes on the same card
+   Expected: ACCEPT
+   Covers: multiple card_attribute entries per card (color + value, color + effect, etc.)
+   Checkpoint: P1 — card attributes (combined) */
+
+game MultiAttr {
+    players 2 .. 4
+    deck {
+        card NumberCard {
+            color { red, blue, green, yellow }
+            value 0 .. 9
+        }
+        card SkipCard {
+            color { red, blue, green, yellow }
+            effect skip_next_player
+        }
+        card DrawTwoCard {
+            color { red, blue, green, yellow }
+            effect draw 2
+        }
+        card BonusCard {
+            color gold
+            points 5
+            effect extra_turn
+        }
+        card PlainCard { }
+    }
+    hand 7
+    win if empty_hand
+}

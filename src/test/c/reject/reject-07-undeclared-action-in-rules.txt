@@ -1,0 +1,20 @@
+/* Reject 07 — Rule uses an action not declared in actions section
+   Expected: REJECT (Stage II: ACCEPT because semantic validation is not implemented yet)
+   Covers: spec rejection case VI (semantic validation — actions used in rules must be declared) */
+
+game UndeclaredRuleAction {
+    players 2
+    deck {
+        card DrawTwo { }
+    }
+    hand 5
+    rules {
+        if played DrawTwo {
+            draw 2
+        }
+    }
+    actions {
+        play
+    }
+    win if empty_hand
+}

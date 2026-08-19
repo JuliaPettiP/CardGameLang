@@ -1,0 +1,11 @@
+/* Reject 19 — Empty deck section
+   Expected: REJECT
+   Covers: semantic validation — deck must contain at least one card */
+
+game EmptyDeck {
+    players 2
+    deck {
+    }
+    hand 5
+    win if empty_hand
+}

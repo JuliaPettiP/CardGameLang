@@ -1,0 +1,12 @@
+/* Reject 18 — Invalid hand size
+   Expected: REJECT
+   Covers: semantic validation — initial hand size must be greater than zero */
+
+game InvalidHand {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 0
+    win if empty_hand
+}

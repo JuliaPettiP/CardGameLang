@@ -1,0 +1,16 @@
+game TestTurn {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    turn {
+        must play
+        may draw
+    }
+    actions {
+        play
+        draw
+    }
+    win if empty_hand
+}

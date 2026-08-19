@@ -1,0 +1,39 @@
+/* Test 14 — Game-level actions section
+   Expected: ACCEPT
+   Covers: actions_section with action_name_list; turn references those actions
+   Checkpoint: P2 — actions section */
+
+game WithActions {
+    players 2 .. 4
+    deck {
+        card RedCard {
+            color red
+        }
+        card BlueCard {
+            color blue
+        }
+        card WildCard {
+            effect change_color
+        }
+    }
+    hand 7
+    play_rule {
+        allow if same_color
+        allow if wild
+    }
+    turn {
+        if cannot_play {
+            draw 1
+        }
+        else {
+            may play 1
+            may draw 1
+        }
+    }
+    actions {
+        draw
+        play
+        change_color
+    }
+    win if empty_hand
+}

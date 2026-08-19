@@ -8,71 +8,257 @@
 /** Initialize module's internal state. */
 ModuleDestructor initializeAbstractSyntaxTreeModule();
 
-/**
- * This type definitions allows self-referencing types (e.g., an expression
- * that is made of another expressions, such as talking about you in 3rd
- * person, but without the madness).
- */
-
-typedef enum ExpressionType ExpressionType;
-typedef enum FactorType FactorType;
-
-typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
 typedef struct Program Program;
+typedef struct Game Game;
+typedef struct GameList GameList;
+typedef struct PlayerRange PlayerRange;
+typedef struct Card Card;
+typedef struct CardList CardList;
+typedef struct WinCondition WinCondition;
+typedef struct TurnAction TurnAction;
+typedef struct TurnActionList TurnActionList;
+typedef struct Turn Turn;
+typedef struct PlayRule PlayRule;
+typedef struct PlayRuleList PlayRuleList;
+typedef struct ColorList ColorList;
+typedef struct CardAttribute CardAttribute;
+typedef struct CardAttributeList CardAttributeList;
+typedef struct ActionNameList ActionNameList;
+typedef struct RuleStatement RuleStatement;
+typedef struct RuleStatementList RuleStatementList;
+typedef struct GameRule GameRule;
+typedef struct GameRuleList GameRuleList;
 
-/**
- * Node types for the Abstract Syntax Tree (AST).
+/* ------------------------------------------------------------------ */
+/*  Win condition                                                       */
+/* ------------------------------------------------------------------ */
+
+typedef enum {
+    WIN_EMPTY_HAND,   /* win if empty_hand  */
+    WIN_REACH_POINTS  /* win if reach_points <N> */
+} WinConditionType;
+
+struct WinCondition {
+    WinConditionType type;
+    int points;   /* only used when type == WIN_REACH_POINTS */
+};
+
+/* ------------------------------------------------------------------ */
+/*  Players                                                             */
+/* ------------------------------------------------------------------ */
+
+struct PlayerRange {
+    int min;
+    int max;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Cards / Deck                                                        */
+/* ------------------------------------------------------------------ */
+
+struct Card {
+    char * name;
+    CardAttributeList * attributes;   /* may be NULL */
+};
+
+struct CardList {
+    Card * card;
+    struct CardList * next;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Card attributes (P1)                                               */
+/* ------------------------------------------------------------------ */
+
+/* Color list: used for both "color { red, blue }" and "color gold"   */
+struct ColorList {
+    char * color;               /* strdup'd color name                */
+    struct ColorList * next;    /* NULL for last element              */
+};
+
+typedef enum {
+    CARD_ATTR_COLOR,    /* color { red, blue } or color gold         */
+    CARD_ATTR_VALUE,    /* value 0..9 or value N                     */
+    CARD_ATTR_POINTS,   /* points 1..3 or points N                   */
+    CARD_ATTR_EFFECT    /* effect skip_next_player or effect draw 2  */
+} CardAttributeType;
+
+struct CardAttribute {
+    CardAttributeType type;
+    /* CARD_ATTR_COLOR */
+    ColorList * colors;     /* one element for single, many for list */
+    /* CARD_ATTR_VALUE and CARD_ATTR_POINTS (share same fields)      */
+    int rangeMin;
+    int rangeMax;           /* == rangeMin for a single value        */
+    /* CARD_ATTR_EFFECT */
+    char * effectName;      /* strdup'd effect identifier            */
+    int effectCount;        /* 0 when no integer argument            */
+};
+
+struct CardAttributeList {
+    CardAttribute * attribute;
+    struct CardAttributeList * next;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Declared actions (P2)                                              */
+/* ------------------------------------------------------------------ */
+
+struct ActionNameList {
+    char * name;                    /* strdup'd action name           */
+    struct ActionNameList * next;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Game rules (P3)                                                    */
+/* ------------------------------------------------------------------ */
+
+/*
+ * A single statement inside a rule body.
+ *   action      — the action / target identifier (e.g. "skip_next_player")
+ *   count       — optional integer argument; 0 when absent
+ *
+ * Note: "next_player draw 2" is stored as two consecutive RuleStatements:
+ *   RuleStatement("next_player", 0) + RuleStatement("draw", 2)
  */
-
-enum ExpressionType {
-	ADDITION,
-	DIVISION,
-	FACTOR,
-	MULTIPLICATION,
-	SUBTRACTION
+struct RuleStatement {
+    char * action;
+    int count;
 };
 
-enum FactorType {
-	CONSTANT,
-	EXPRESSION
+struct RuleStatementList {
+    RuleStatement * statement;
+    struct RuleStatementList * next;
 };
 
-struct Constant {
-	int value;
+/*
+ * A single conditional rule:  if played <CardName> { <body> }
+ */
+struct GameRule {
+    char * triggerCard;          /* strdup'd card name                 */
+    RuleStatementList * body;
 };
 
-struct Factor {
-	union {
-		Constant * constant;
-		Expression * expression;
-	};
-	FactorType type;
+struct GameRuleList {
+    GameRule * rule;
+    struct GameRuleList * next;
 };
 
-struct Expression {
-	union {
-		Factor * factor;
-		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
-		};
-	};
-	ExpressionType type;
+/* ------------------------------------------------------------------ */
+/*  Turn / Actions                                                      */
+/* ------------------------------------------------------------------ */
+
+typedef enum {
+    TURN_ACTION_PLAIN,  /* plain statement inside if/else block: draw 1   */
+    TURN_ACTION_MAY,    /* optional action at top level: may play 1        */
+    TURN_ACTION_MUST    /* mandatory action at top level: must play 1      */
+} TurnActionType;
+
+struct TurnAction {
+    TurnActionType type;
+    char * name;   /* action identifier, e.g. "play", "draw"              */
+    int count;     /* optional integer argument; 0 when not specified      */
+};
+
+struct TurnActionList {
+    TurnAction * action;
+    struct TurnActionList * next;
+};
+
+typedef enum {
+    TURN_SIMPLE,       /* turn { must play 1 / may draw 1 / … }           */
+    TURN_CONDITIONAL   /* turn { if cannot_play { … } else { … } }        */
+} TurnType;
+
+struct Turn {
+    TurnType type;
+    TurnActionList * statements;  /* TURN_SIMPLE: the statement list       */
+    TurnActionList * ifBlock;     /* TURN_CONDITIONAL: if-cannot_play body */
+    TurnActionList * elseBlock;   /* TURN_CONDITIONAL: else body           */
+};
+
+/* ------------------------------------------------------------------ */
+/*  Play rules                                                          */
+/* ------------------------------------------------------------------ */
+
+typedef enum {
+    PLAY_RULE_ALLOW,       /* allow ... */
+    PLAY_RULE_CANNOT_PLAY  /* cannot_play ... */
+} PlayRulePermission;
+
+typedef enum {
+    PLAY_CONDITION_SAME_COLOR,   /* allow if same_color                      */
+    PLAY_CONDITION_SAME_VALUE,   /* allow if same_value                      */
+    PLAY_CONDITION_WILD,         /* allow if wild                            */
+    PLAY_CONDITION_ANY_CARD,     /* allow if any_card                        */
+    PLAY_CONDITION_PLAYED_CARD   /* allow/cannot_play X if played Y          */
+} PlayConditionType;
+
+struct PlayRule {
+    PlayRulePermission permission;  /* ALLOW or CANNOT_PLAY                  */
+    char * subject;                 /* card name for PLAYED_CARD; else NULL  */
+    PlayConditionType condition;
+    char * conditionTarget;         /* card name after "if played"; else NULL */
+};
+
+struct PlayRuleList {
+    PlayRule * rule;
+    struct PlayRuleList * next;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Game                                                                */
+/* ------------------------------------------------------------------ */
+
+struct Game {
+    char * name;
+    PlayerRange * players;
+    CardList * deck;
+    int handSize;
+    PlayRuleList * playRules;
+    GameRuleList * rules;          /* may be NULL */
+    Turn * turn;
+    ActionNameList * declaredActions;
+    WinCondition * winCondition;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Program (root)                                                      */
+/* ------------------------------------------------------------------ */
+
+/* A program may define one or more games. */
+struct GameList {
+    Game * game;
+    struct GameList * next;
 };
 
 struct Program {
-	Expression * expression;
+    GameList * games;
 };
 
-/**
- * Node recursive super-duper-trambolik-destructors.
- */
+/* ------------------------------------------------------------------ */
+/*  Destructors                                                         */
+/* ------------------------------------------------------------------ */
 
-void destroyConstant(Constant * constant);
-void destroyExpression(Expression * expression);
-void destroyFactor(Factor * factor);
+void destroyWinCondition(WinCondition * winCondition);
+void destroyTurnAction(TurnAction * action);
+void destroyTurnActionList(TurnActionList * list);
+void destroyTurn(Turn * turn);
+void destroyPlayRule(PlayRule * rule);
+void destroyPlayRuleList(PlayRuleList * list);
+void destroyColorList(ColorList * list);
+void destroyCardAttribute(CardAttribute * attribute);
+void destroyCardAttributeList(CardAttributeList * list);
+void destroyActionNameList(ActionNameList * list);
+void destroyRuleStatement(RuleStatement * statement);
+void destroyRuleStatementList(RuleStatementList * list);
+void destroyGameRule(GameRule * rule);
+void destroyGameRuleList(GameRuleList * list);
+void destroyPlayerRange(PlayerRange * range);
+void destroyCard(Card * card);
+void destroyCardList(CardList * list);
+void destroyGame(Game * game);
+void destroyGameList(GameList * list);
 void destroyProgram(Program * program);
 
 #endif

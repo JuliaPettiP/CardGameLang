@@ -1,0 +1,13 @@
+/* Reject 15 — Duplicate card name inside deck
+   Expected: REJECT
+   Covers: semantic validation — card names in deck must be unique */
+
+game DuplicateCards {
+    players 2
+    deck {
+        card Ace { }
+        card Ace { }
+    }
+    hand 5
+    win if empty_hand
+}

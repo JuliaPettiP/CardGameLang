@@ -1,0 +1,15 @@
+/* Reject 10 — play_rule references a card that does not exist in the deck
+   Expected: REJECT (Stage II: ACCEPT because semantic validation is not implemented yet)
+   Covers: spec rejection case VIII (semantic validation — card names referenced in play_rule must exist) */
+
+game UndefinedPlayRuleCard {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    play_rule {
+        cannot_play Joker if played Ace
+    }
+    win if empty_hand
+}

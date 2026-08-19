@@ -1,5 +1,3 @@
-#include "backend/code-generation/Generator.h"
-#include "backend/domain-specific/Calculator.h"
 #include "frontend/Frontend.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -7,6 +5,9 @@
 #include "support/type/CompilationStatus.h"
 #include "support/type/CompilerState.h"
 #include "support/type/ModuleDestructor.h"
+#include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
+#include "backend/domain-specific/SemanticValidator.h"
+#include "backend/code-generation/Generator.h"
 
 /**
  * The main entry-point of the entire application. If you use "strtok" to
@@ -27,31 +28,23 @@ const int main(const int length, const char ** arguments) {
 		initializeAbstractSyntaxTreeModule(),
 		initializeFlexActionsModule(lexicalAnalyzer),
 		initializeBisonActionsModule(&compilerState),
-		initializeFrontendModule(lexicalAnalyzer),
-		initializeCalculatorModule(),
-		initializeGeneratorModule()
+		initializeFrontendModule(lexicalAnalyzer)
 	};
 	CompilationStatus compilationStatus = executeSyntacticAnalysis();
 	Program * program = compilerState.abstractSyntaxtTree;
 	if (compilationStatus == SUCCEEDED) {
-		// ----------------------------------------------------------------------------------------
-		// Beginning of the Backend... ------------------------------------------------------------
-		logDebugging(logger, "Computing expression value...");
-		ComputationResult computationResult = executeCalculator(&compilerState);
-		if (computationResult.succeeded) {
-			compilerState.value = computationResult.value;
-			executeGenerator(&compilerState);
+		compilationStatus = validateSemantics(program);
+
+		if (compilationStatus == FAILED) {
+			logError(logger, "The semantic-analysis phase rejects the input program.");
 		}
-		else {
-			logError(logger, "The computation phase rejects the input program.");
-			compilationStatus = FAILED;
-		}
-		// ...end of the Backend. -----------------------------------------------------------------
-		// ----------------------------------------------------------------------------------------
 	}
 	else {
 		logError(logger, "The syntactic-analysis phase rejects the input program.");
 		compilationStatus = FAILED;
+	}
+	if (compilationStatus == SUCCEEDED) {
+		generateGameSummary(program);
 	}
 	logDebugging(logger, "Releasing AST resources...");
 	destroyProgram(program);

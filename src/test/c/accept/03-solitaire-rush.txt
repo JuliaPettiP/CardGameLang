@@ -1,0 +1,9 @@
+game SolitaireRush {
+    players 1
+    deck {
+        card AceOfSpades { }
+        card KingOfHearts { }
+    }
+    hand 13
+    win if empty_hand
+}

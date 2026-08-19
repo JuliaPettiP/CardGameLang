@@ -1,0 +1,35 @@
+/* Test 16 — Full HighPoints (spec section 6.2)
+   Expected: ACCEPT
+   Covers: single color, points range, points single, effect, play_rule any_card,
+           turn simple (must), actions, win if reach_points
+   Checkpoint: P1 + P2 integration — closest representation of spec example */
+
+game HighPoints {
+    players 2
+    deck {
+        card LowCard {
+            color { red, black }
+            points 1 .. 3
+        }
+        card HighCard {
+            color { red, black }
+            points 4 .. 7
+        }
+        card BonusCard {
+            color gold
+            points 5
+            effect extra_turn
+        }
+    }
+    hand 5
+    play_rule {
+        allow if any_card
+    }
+    turn {
+        must play 1
+    }
+    actions {
+        play
+    }
+    win if reach_points 21
+}

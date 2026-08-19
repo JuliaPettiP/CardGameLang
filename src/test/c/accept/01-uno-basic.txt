@@ -1,0 +1,10 @@
+game UnoBasic {
+    players 2 .. 10
+    deck {
+        card RedSkip { }
+        card BlueReverse { }
+        card WildDrawFour { }
+    }
+    hand 7
+    win if empty_hand
+}

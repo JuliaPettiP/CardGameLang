@@ -9,18 +9,46 @@
 #include "BisonParser.h"
 #include <stdlib.h>
 
-/** Initialize module's internal state. */
-ModuleDestructor initializeBisonActionsModule();
+ModuleDestructor initializeBisonActionsModule(CompilerState * compilerState);
 
-/**
- * Bison semantic actions.
- */
+/* Win conditions */
+WinCondition * WinEmptyHandSemanticAction();
+WinCondition * WinPointsSemanticAction(int points);
 
-Constant * IntegerConstantSemanticAction(const int value);
-Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
-Expression * FactorExpressionSemanticAction(Factor * factor);
-Factor * ConstantFactorSemanticAction(Constant * constant);
-Factor * ExpressionFactorSemanticAction(Expression * expression);
-Program * ExpressionProgramSemanticAction(Expression * expression);
+/* Turn */
+TurnAction * TurnActionSemanticAction(TurnActionType type, char * name, int count);
+TurnActionList * TurnActionListSemanticAction(TurnAction * action, TurnActionList * next);
+Turn * TurnSimpleSemanticAction(TurnActionList * statements);
+Turn * TurnConditionalSemanticAction(TurnActionList * ifBlock, TurnActionList * elseBlock);
+
+/* Play rules */
+PlayRule * PlayRuleSemanticAction(PlayRulePermission permission, char * subject, PlayConditionType condition, char * conditionTarget);
+PlayRuleList * PlayRuleListSemanticAction(PlayRule * rule, PlayRuleList * next);
+
+/* Game rules (P3) */
+RuleStatement * RuleStatementSemanticAction(char * action, int count);
+RuleStatementList * RuleStatementListSemanticAction(RuleStatement * statement, RuleStatementList * next);
+GameRule * GameRuleSemanticAction(char * triggerCard, RuleStatementList * body);
+GameRuleList * GameRuleListSemanticAction(GameRule * rule, GameRuleList * next);
+
+/* Card attributes (P1) */
+ColorList * ColorListSemanticAction(char * color, ColorList * next);
+CardAttribute * CardColorListSemanticAction(ColorList * colors);
+CardAttribute * CardColorSingleSemanticAction(char * color);
+CardAttribute * CardValueSemanticAction(int min, int max);
+CardAttribute * CardPointsSemanticAction(int min, int max);
+CardAttribute * CardEffectSemanticAction(char * effectName, int count);
+CardAttributeList * CardAttributeListSemanticAction(CardAttribute * attribute, CardAttributeList * next);
+
+/* Declared actions (P2) */
+ActionNameList * ActionNameListSemanticAction(char * name, ActionNameList * next);
+
+/* Game tree nodes */
+GameList * GameListSemanticAction(Game * game, GameList * next);
+Program * GameProgramSemanticAction(GameList * games);
+PlayerRange * PlayerRangeSemanticAction(const int min, const int max);
+Card * CardSemanticAction(char * name, CardAttributeList * attributes);
+CardList * CardListSemanticAction(Card * card, CardList * next);
+Game * GameSemanticAction(char * name, PlayerRange * players, const int handSize, CardList * deck, PlayRuleList * playRules, GameRuleList * rules, Turn * turn, ActionNameList * declaredActions, WinCondition * winCondition);
 
 #endif

@@ -1,0 +1,12 @@
+/* Reject 02 — Wrong section order: hand declared before deck
+   Expected: REJECT (parse error — grammar requires players → deck → hand)
+   Covers: spec rejection case II (structural constraint) */
+
+game WrongOrder {
+    players 2
+    hand 5
+    deck {
+        card Ace { }
+    }
+    win if empty_hand
+}

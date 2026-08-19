@@ -1,0 +1,47 @@
+/* Test 15 — Full ColorMatch (spec section 6.1)
+   Expected: ACCEPT
+   Covers: ALL sections together — players, deck (with all attribute types),
+           hand, play_rule, turn (conditional), actions, win if empty_hand
+   Checkpoint: P1 + P2 integration — closest representation of spec example */
+
+game ColorMatch {
+    players 2 .. 4
+    deck {
+        card NumberCard {
+            color { red, blue, green, yellow }
+            value 0 .. 9
+        }
+        card SkipCard {
+            color { red, blue, green, yellow }
+            effect skip_next_player
+        }
+        card DrawTwoCard {
+            color { red, blue, green, yellow }
+            effect draw 2
+        }
+        card WildCard {
+            effect change_color
+        }
+    }
+    hand 7
+    play_rule {
+        allow if same_color
+        allow if same_value
+        allow if wild
+    }
+    turn {
+        if cannot_play {
+            draw 1
+        }
+        else {
+            may play 1
+            may draw 1
+        }
+    }
+    actions {
+        draw
+        play
+        choose_color
+    }
+    win if empty_hand
+}

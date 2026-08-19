@@ -1,0 +1,24 @@
+/* Test 11 — Card value and points attributes: range and single forms
+   Expected: ACCEPT
+   Covers: CARD_ATTR_VALUE (range + single), CARD_ATTR_POINTS (range + single)
+   Checkpoint: P1 — card attributes */
+
+game ValuePoints {
+    players 2
+    deck {
+        card LowCard {
+            value 0 .. 5
+        }
+        card HighCard {
+            value 9
+        }
+        card SmallPoints {
+            points 1 .. 3
+        }
+        card BigPoints {
+            points 10
+        }
+    }
+    hand 5
+    win if reach_points 50
+}

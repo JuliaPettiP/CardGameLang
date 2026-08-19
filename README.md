@@ -1,6 +1,6 @@
 [![✗](https://img.shields.io/badge/Release-v2.0.0-ffb600.svg?style=for-the-badge)](https://github.com/JuliaPettiP/CardGameLang/releases)
 
-[![✗](https://github.com/JuliaPettiP/CardGameLang/actions/workflows/pipeline.yaml/badge.svg?branch=production)](https://github.com/JuliaPettiP/CardGameLang/actions/workflows/pipeline.yaml)
+[![✗](https://github.com/JuliaPettiP/CardGameLang/actions/workflows/pipeline.yaml/badge.svg?branch=development)](https://github.com/JuliaPettiP/CardGameLang/actions/workflows/pipeline.yaml)
 
 # CardGameLang
 
@@ -9,6 +9,21 @@
 | Name                     | Student ID | Email                            |
 |--------------------------|------------|----------------------------------|
 | Julia Petti Pagadizabal  | 62453      | jpettipagadizabal@itba.edu.ar    |
+| João Ferreira            | 69220      | jcouceirofulgenciot@itba.edu.ar  |
+
+## Stage II Notes
+
+Some semantic rejection tests currently produce temporary false positives because
+semantic validation is not fully implemented in Stage II yet.
+
+The reject tests that are currently accepted intentionally and are expected
+to be rejected in Stage III after semantic-analysis is implemented are this:
+
+- reject-06-invalid-player-range.txt
+- reject-07-undeclared-action-in-rules.txt
+- reject-08-undeclared-action-in-turn.txt
+- reject-09-undefined-card-in-rules.txt
+- reject-10-undefined-card-in-play-rule.txt
 
 
 A base compiler example, developed with Flex and Bison.

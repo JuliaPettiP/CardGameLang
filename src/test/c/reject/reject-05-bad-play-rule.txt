@@ -1,0 +1,15 @@
+/* Reject 05 — Unsupported play rule condition: "allow if same_suit" is not a keyword
+   Expected: REJECT (parse error — same_suit is lexed as IDENTIFIER, no matching rule)
+   Covers: spec rejection case V — unsupported play rule condition */
+
+game BadPlayRule {
+    players 2
+    deck {
+        card Ace { }
+    }
+    hand 5
+    play_rule {
+        allow if same_suit
+    }
+    win if empty_hand
+}

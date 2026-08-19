@@ -1,0 +1,22 @@
+/* Reject 14 — Rule references an undefined effect/action
+   Expected: REJECT
+   Covers: spec rejection case VIII — undefined effect/action
+
+game UndefinedEffect {
+    players 2
+    deck {
+        card DrawCard {
+            effect draw 2
+        }
+    }
+    hand 5
+    rules {
+        if played DrawCard {
+            teleport
+        }
+    }
+    actions {
+        draw
+    }
+    win if empty_hand
+}

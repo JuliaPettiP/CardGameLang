@@ -1,0 +1,31 @@
+/* Test 18 — rules section: if played X { action N } with integer count
+   Expected: ACCEPT
+   Covers: rule_statement with INTEGER count, multiple rules, multiple statements per rule
+   Checkpoint: P3 — rules section (with count) */
+
+game CountRules {
+    players 2
+    deck {
+        card DrawTwoCard { }
+        card DrawFourCard { }
+        card BonusCard { }
+    }
+    hand 5
+    rules {
+        if played DrawTwoCard {
+            draw 2
+        }
+        if played DrawFourCard {
+            draw 4
+        }
+        if played BonusCard {
+            extra_turn
+            draw 1
+        }
+    }
+    actions {
+        draw
+        extra_turn
+    }
+    win if empty_hand
+}

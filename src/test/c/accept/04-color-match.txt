@@ -1,0 +1,20 @@
+/* Test 04 — play_rule with keyword conditions (same_color, same_value, wild)
+   Expected: ACCEPT
+   Covers: PLAY_CONDITION_SAME_COLOR, PLAY_CONDITION_SAME_VALUE, PLAY_CONDITION_WILD
+   Section order: players → deck → hand → play_rule → win */
+
+game ColorMatch {
+    players 2 .. 4
+    deck {
+        card NumberCard { }
+        card SkipCard { }
+        card WildCard { }
+    }
+    hand 7
+    play_rule {
+        allow if same_color
+        allow if same_value
+        allow if wild
+    }
+    win if empty_hand
+}

@@ -1,0 +1,12 @@
+/* Reject 13 — Non numeric players amount
+   Expected: REJECT
+   Covers: spec rejection case II — non numeric players amount */
+
+game BadPlayers {
+    players many
+    deck {
+        card Ace { }
+    }
+    hand 5
+    win if empty_hand
+}
